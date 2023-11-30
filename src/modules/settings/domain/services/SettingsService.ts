@@ -6,7 +6,7 @@ export class SettingsService {
     const dirItems = await this.getDirItems();
     const size = dirItems.reduce((acc, val) => acc + val.size, 0);
     const cacheSize = formatBytes(size);
-    return cacheSize;
+    return ' (' + cacheSize + ')';
   }
 
   public async clearCache() {

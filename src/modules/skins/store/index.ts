@@ -4,6 +4,7 @@ import { CategoryItem } from '@src/modules/core/interfaces/categoryItem';
 import { SortByType } from '@src/modules/core/interfaces/sortByType';
 import { SortByAscending } from '@src/modules/core/interfaces/sortByAscending';
 import sortService from '@src/modules/ud-sort/domain/services/SortService';
+import { LanguageCode } from '@src/modules/translations/domain/interfaces/Language';
 
 export interface ExistSkins {
   id: string;
@@ -20,9 +21,11 @@ type State = {
   sortSkins: (
     selectedSortType: SortByType,
     selectedSortByAscending: SortByAscending,
+    currentLanguage: LanguageCode,
   ) => void;
   loadExistSkins: () => void;
   removeExistSkins: () => void;
+  updateSkin: (skin: CategoryItem) => void;
 };
 
 const useSkinsStore = create<State>((set, get) => ({
@@ -38,8 +41,6 @@ const useSkinsStore = create<State>((set, get) => ({
       set({ isSkinsLoading: true });
       const fSkins = await getSkins();
       set({ skins: fSkins, isSkinsLoading: false });
-
-      state.sortSkins('By default', 'Ascending');
       state.loadExistSkins();
     } catch (err) {
       console.warn('err loadSkins', err);
@@ -56,6 +57,7 @@ const useSkinsStore = create<State>((set, get) => ({
   sortSkins: (
     selectedSortType: SortByType,
     selectedSortByAscending: SortByAscending,
+    currentLanguage: LanguageCode,
   ) => {
     set({ isSkinsSorting: true });
     const seeds = get().skins;
@@ -63,6 +65,7 @@ const useSkinsStore = create<State>((set, get) => ({
       seeds,
       selectedSortType,
       selectedSortByAscending,
+      currentLanguage,
     );
     set({ skins: fSkins, isSkinsSorting: false });
   },
@@ -75,6 +78,19 @@ const useSkinsStore = create<State>((set, get) => ({
 
   removeExistSkins: () => {
     set({ existSkins: [] });
+  },
+
+  updateSkin: (skin: CategoryItem) => {
+    const state = get();
+    if (skin) {
+      const fSkins = state.skins.map(i => {
+        if (i.id === skin.id) {
+          return skin;
+        }
+        return i;
+      });
+      set({ skins: fSkins });
+    }
   },
 }));
 

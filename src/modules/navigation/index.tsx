@@ -2,14 +2,7 @@ import React, { useCallback } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import screenNames from '@src/modules/navigation/screen-names';
 import TutorialScreen from '@src/modules/tutorial/ui/screens';
-import MemeScreen from '@src/modules/meme/ui/screens';
-import {
-  Dimensions,
-  Image,
-  ImageSourcePropType,
-  Platform,
-  View,
-} from 'react-native';
+import { Dimensions, Image, ImageSourcePropType, View } from 'react-native';
 import {
   HOME,
   MEME,
@@ -22,7 +15,10 @@ import { navigationRef } from '@src/modules/navigation/RootNavigation';
 import { routingInstrumentation } from '@src/sentry/configure-sentry';
 import MainMenuStack from '@src/modules/navigation/main-menu-stack';
 import SettingsStack from '@src/modules/navigation/settings-stack';
-import { getStatusBarHeight } from 'react-native-safearea-height';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppTranslation } from '../translations/domain/hooks/use-app-translation';
+import analyticService from '../analytics/services/AnayticService';
+import MemeStack from '@src/modules/navigation/meme-stack';
 
 const { width, height } = Dimensions.get('window');
 
@@ -45,8 +41,8 @@ const screenOptions = {
     paddingHorizontal: 20,
     paddingBottom: 8,
     paddingTop: 10,
-    marginBottom: getStatusBarHeight(true),
   },
+  tabBarHideOnKeyboard: true,
   tabBarLabelStyle: {
     fontSize: 13,
     fontFamily: theme.fonts.pixel,
@@ -69,19 +65,38 @@ const resetTabStacksOnBlur = ({ navigation }) => ({
       }
     });
   },
+  focus: () => {
+    const state = navigation.getState();
+    const currentScreenName = state.routeNames[state.index];
+
+    if (currentScreenName === 'Tutorial') {
+      analyticService.reportEvent('start_tutorial');
+    }
+    if (currentScreenName === 'Home') {
+      analyticService.reportEvent('start_menu');
+    }
+    if (currentScreenName === 'Meme') {
+      analyticService.reportEvent('start_meme');
+    }
+  },
 });
 
 export default function BottomTabNavigator() {
+  const { t } = useAppTranslation('shared');
   const onNavigationReady = useCallback(() => {
     routingInstrumentation.registerNavigationContainer(navigationRef);
   }, []);
+
+  const insets = useSafeAreaInsets();
 
   return (
     <NavigationContainer ref={navigationRef} onReady={onNavigationReady}>
       <View
         style={{
           width,
-          height: Platform.OS === 'ios' ? height - 24 : '100%',
+          height,
+          paddingBottom: insets.bottom,
+          paddingTop: insets.top,
         }}>
         <Tab.Navigator
           initialRouteName={screenNames.mainMenu}
@@ -90,25 +105,25 @@ export default function BottomTabNavigator() {
           <Tab.Screen
             name={screenNames.mainMenu}
             component={MainMenuStack}
-            options={resolveIcon(HOME)}
+            options={{ ...resolveIcon(HOME), title: t('home') }}
             listeners={resetTabStacksOnBlur}
           />
           <Tab.Screen
             name={screenNames.tutorial}
             component={TutorialScreen}
-            options={resolveIcon(TUTORIAL)}
+            options={{ ...resolveIcon(TUTORIAL), title: t('tutorial') }}
             listeners={resetTabStacksOnBlur}
           />
           <Tab.Screen
             name={screenNames.meme}
-            component={MemeScreen}
-            options={resolveIcon(MEME)}
+            component={MemeStack}
+            options={{ ...resolveIcon(MEME), title: t('meme') }}
             listeners={resetTabStacksOnBlur}
           />
           <Tab.Screen
             name={screenNames.settings}
             component={SettingsStack}
-            options={resolveIcon(SETTINGS)}
+            options={{ ...resolveIcon(SETTINGS), title: t('settings') }}
             listeners={resetTabStacksOnBlur}
           />
         </Tab.Navigator>

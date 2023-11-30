@@ -20,7 +20,7 @@ export const RateModal = (props: Props) => {
       InAppReview.RequestInAppReview()
         .then(() => {})
         .catch(error => {
-          console.warn(error);
+          console.warn('Error in RequestInAppReview', error);
         });
     }
     setModalVisible(false);

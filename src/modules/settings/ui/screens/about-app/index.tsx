@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import * as S from './styles';
 import UDHeader from '@src/modules/ud-ui/components/ud-header';
 import { navigateBack } from '@src/modules/navigation/RootNavigation';
 import { LOGO } from '@src/assets/constants/imagePaths';
 import { Alert, Linking } from 'react-native';
-import { AboutMenuItems } from '@src/modules/settings/ui/screens/about-app/about-menu-items';
+import { AboutMenuItem } from '@src/modules/settings/ui/screens/about-app/AboutMenuItem';
 import Modal from 'react-native-modal';
+import { useAppTranslation } from '@src/modules/translations/domain/hooks/use-app-translation';
 
 export default function AboutAppScreen() {
   const [openDisclaimer, setOpenDisclaimer] = useState<boolean>(false);
@@ -13,6 +14,17 @@ export default function AboutAppScreen() {
   const onPressArrowBack = () => {
     navigateBack();
   };
+
+  const { t } = useAppTranslation('about');
+
+  const AboutMenuItems: AboutMenuItem[] = useMemo(
+    () => [
+      { id: '1', label: t('privacy') },
+      { id: '2', label: t('user') },
+      { id: '3', label: t('disclaimer') },
+    ],
+    [t],
+  );
 
   const openLink = async (url: string) => {
     const supported = await Linking.canOpenURL(url);
@@ -34,11 +46,11 @@ export default function AboutAppScreen() {
   };
 
   const onPressItem = async ({ item }) => {
-    if (item.label === 'Disclaimer') {
+    if (item.label === t('disclaimer')) {
       setOpenDisclaimer(true);
     } else {
       const url =
-        item.label === 'Privacy policy'
+        item.label === t('privacy')
           ? 'https://discord.com/'
           : 'https://www.youtube.com/';
       await openLink(url);
@@ -60,7 +72,7 @@ export default function AboutAppScreen() {
     <S.Container showsVerticalScrollIndicator={false} bounces={false}>
       <S.HeaderShadow>
         <UDHeader
-          title={'About App'}
+          title={t('about_app')}
           arrowBackButton={true}
           onPressArrowBack={onPressArrowBack}
         />
@@ -69,17 +81,15 @@ export default function AboutAppScreen() {
       <S.Logo source={LOGO} />
 
       <S.Label fStyle={'caption700'} fSize={27}>
-        AddMods mods for Minecraft PE
+        {t('header')}
       </S.Label>
 
       <S.WithTheHelpText fStyle={'caption400'} fSize={17}>
-        With the help of AddMods collection of add-ons for the game Minecraft PE
-        you will be able to add amazing mods, maps and skins to the game!
+        {t('with_the_help')}
       </S.WithTheHelpText>
 
       <S.WithTheHelpText fStyle={'caption400'} fSize={17}>
-        Having problems with the app? Write us an e-mail with description of the
-        problem and we will reply to you shortly.{' '}
+        {t('problems')}{' '}
         <S.MailText
           fStyle={'caption700'}
           fSize={17}
@@ -109,14 +119,12 @@ export default function AboutAppScreen() {
         onRequestClose={() => setOpenDisclaimer(false)}>
         <S.ModalContainer>
           <S.ModalHeader fSize={27} fStyle={'caption700'}>
-            Disclaimer
+            {t('disclaimer')}
           </S.ModalHeader>
 
           <S.DisclaimerText fStyle={'caption400'} fSize={18}>
-            THIS IS NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR
-            ASSOCIATED WITH MOJANG AB. Minecraft Name, Minecraft Mark and
-            Minecraft Assets are all property of Mojang AB or their respectful
-            owner.{'\n'}
+            {t('disclaimer_text')}
+            {'\n'}
             <S.MailText
               fStyle={'caption700'}
               fSize={17}

@@ -6,37 +6,44 @@ import Carousel, {
 import React, { useState } from 'react';
 import { Dimensions } from 'react-native';
 import screenNames from '@src/modules/navigation/screen-names';
-import Config from 'react-native-config';
 import { useNavigation } from '@react-navigation/native';
-import { CategoryType } from '@src/modules/core/interfaces/categoryType';
+import { CarouselItem } from '@src/modules/carousel/domain/interfaces/CarouselItem';
 
 const screenWidth = Dimensions.get('window').width;
 
 interface Props {
   isImageDelayLoading: boolean;
-  imageData: any[];
+  imageData: CarouselItem[];
   height: number;
-  categoryType: CategoryType;
+  isPressable?: boolean;
 }
 export default function UDCarouselSlider(props: Props) {
-  const { isImageDelayLoading, imageData, height, categoryType } = props;
+  const { isImageDelayLoading, imageData, height, isPressable = false } = props;
   const [activeIndex, setActiveIndex] = useState(0);
   const navigation = useNavigation<any>();
 
-  const onPressCarouselItem = () => {
-    navigation.navigate(screenNames.mods);
+  const onPressCarouselItem = ({ item }: CarouselItem) => {
+    if (isPressable) {
+      if (item.asset_id && item.type) {
+        navigation.navigate(screenNames.udDetailsScreen, {
+          categoryId: item.asset_id,
+          categoryType: item.type,
+        });
+      }
+    }
   };
+
   const renderItem = ({ item }: any, parallaxProps: any) => {
-    const urlImage = Config.API_URL + categoryType + '/' + item.imagePath;
+    const imageUrl = isPressable ? item.url : item.picture.url;
 
     return (
       <S.CarouselWrap
         activeOpacity={1}
-        onPress={onPressCarouselItem}
+        onPress={() => onPressCarouselItem({ item })}
         height={String(height)}>
         <ParallaxImage
           containerStyle={{ flex: 1 }}
-          source={{ uri: urlImage }}
+          source={{ uri: imageUrl }}
           parallaxFactor={0}
           fadeDuration={800}
           {...parallaxProps}

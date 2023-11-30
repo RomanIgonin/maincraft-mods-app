@@ -10,7 +10,7 @@ export const Container = styled.View`
 export const TabBarShadow = styled.View`
   z-index: 1;
   ${Platform.OS === 'ios'
-    ? `box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);`
+    ? 'box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);'
     : 'elevation: 10;'};
   background-color: ${props => props.theme.colors.backgroundLight};
 `;

@@ -7,6 +7,9 @@ import {
   MAGNIFIER_LIGHT,
   OPTIONS,
 } from '@src/assets/constants/imagePaths';
+import { Alert, Linking } from 'react-native';
+import { useAppTranslation } from '@src/modules/translations/domain/hooks/use-app-translation';
+import analyticService from '@src/modules/analytics/services/AnayticService';
 
 interface Props {
   title: string;
@@ -20,6 +23,7 @@ interface Props {
 }
 
 export default function UDHeader(props: Props) {
+  const { t } = useAppTranslation('shared');
   const {
     title,
     arrowBackButton = false,
@@ -30,6 +34,23 @@ export default function UDHeader(props: Props) {
     onPressSearch,
     onPressOptions,
   } = props;
+
+  const onPressDiscord = async () => {
+    const urlDiscord = 'https://discord.com/';
+    const supported = await Linking.canOpenURL(urlDiscord);
+    if (supported) {
+      await Linking.openURL(urlDiscord);
+    } else {
+      Alert.alert(`Don't know how to open this URL: ${urlDiscord}`);
+    }
+
+    if (title === t('meme')) {
+      analyticService.reportEvent('discord_meme');
+    }
+    if (title === t('tutorial')) {
+      analyticService.reportEvent('discord_tutorial');
+    }
+  };
 
   return (
     <S.Container source={BG_TOP_BAR}>
@@ -57,7 +78,7 @@ export default function UDHeader(props: Props) {
         )}
 
         {discordButton && !searchButton && (
-          <S.DiscordWrap>
+          <S.DiscordWrap onPress={onPressDiscord}>
             <S.DiscordButton source={DISCORD} />
           </S.DiscordWrap>
         )}

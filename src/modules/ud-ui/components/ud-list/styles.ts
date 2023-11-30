@@ -8,7 +8,7 @@ const { width } = Dimensions.get('window');
 export const Container = styled.View`
   flex: 1;
   background-color: ${props => props.theme.colors.backgroundLight};
-  padding-top: 20px;
+  margin-top: 20px;
 `;
 
 export const FlatListWrap = styled.View`
@@ -20,7 +20,7 @@ export const FlatList = styled.FlatList``;
 
 export const ListItemWrapper = styled.View`
   flex: 1;
-  box-shadow: ${Platform.OS === 'ios' ? `0 2px 3px rgba(0, 0, 0, 0.25);` : ''};
+  box-shadow: ${Platform.OS === 'ios' ? '0 2px 3px rgba(0, 0, 0, 0.25);' : ''};
   height: 218px;
   margin: 0 14px 14px 14px;
   background-color: ${props => props.theme.colors.backgroundLight};
@@ -96,13 +96,16 @@ export const DetailsBottomText = styled(UDText)`
 `;
 
 export const DownloadIcon = styled(FastImage)`
-  margin-horizontal: 4px;
+  margin: 0 4px;
   height: 16px;
   width: 16px;
 `;
 
-export const VersionsIcon = styled(FastImage)`
-  margin-horizontal: 4px;
+interface VersionProps {
+  isSeedsCategory: boolean;
+}
+export const VersionsIcon = styled(FastImage)<VersionProps>`
+  margin: 0 4px 0 ${props => (props.isSeedsCategory ? '-3px' : '4px')};
   height: 18px;
   width: 18px;
 `;
@@ -137,11 +140,11 @@ interface TopSkinsWrapperProps {
   index: number;
 }
 export const TopSkinsWrapper = styled.View<TopSkinsWrapperProps>`
-  box-shadow: ${Platform.OS === 'ios' ? `0 2px 3px rgba(0, 0, 0, 0.25);` : ''};
+  box-shadow: ${Platform.OS === 'ios' ? '0 2px 3px rgba(0, 0, 0, 0.25);' : ''};
   width: ${`${width / 2 - 26}px`};
   height: 234px;
   margin: ${props =>
-    props.index % 2 == 0 ? '0 20px 20px 14px' : '0 14px 20px 0'};
+    props.index % 2 === 0 ? '0 20px 20px 14px' : '0 14px 20px 0'};
   background-color: ${props => props.theme.colors.backgroundLight};
   border-radius: 20px;
 `;
@@ -159,7 +162,10 @@ export const SkinsBgImage = styled(FastImage)`
   width: 100%;
 `;
 
-export const SkinsImage = styled(SkinsBgImage)``;
+export const SkinsImage = styled(FastImage)`
+  height: 234px;
+  width: 100%;
+`;
 
 export const SkinsDetailWrap = styled.View`
   position: absolute;

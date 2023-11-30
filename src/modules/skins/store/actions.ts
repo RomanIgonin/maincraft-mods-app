@@ -5,13 +5,12 @@ import { CategoryItem } from '@src/modules/core/interfaces/categoryItem';
 import { ExistSkins } from '@src/modules/skins/store/index';
 
 export const getSkins = async (): Promise<CategoryItem[]> => {
-  const API_URL_SKINS = Config.API_URL + '/skins/main.json';
+  const API_URL_SKINS = Config.API_URL + 'asset/sorted/skins';
 
   const skins = await axios.get(API_URL_SKINS);
-
   return await Promise.all(
-    skins.data.addons.map(async (mp: any) => {
-      const filepath = DocumentDirectoryPath + '/' + mp.fileName;
+    skins.data.map(async (mp: any) => {
+      const filepath = DocumentDirectoryPath + '/' + mp.fullName;
       return { ...mp, filepath };
     }),
   );
@@ -20,15 +19,15 @@ export const getSkins = async (): Promise<CategoryItem[]> => {
 export const getExistSkins = async (
   skins: CategoryItem[],
 ): Promise<ExistSkins[] | []> => {
+  // TODO: replace to for await
   const existArr = await Promise.all(
     skins.map(async skin => {
-      const filepath = DocumentDirectoryPath + '/' + skin.fileName;
+      const filepath = DocumentDirectoryPath + '/' + skin.file.fullName;
       const isExist = await RNFS.exists(filepath);
       if (isExist) {
-        return { id: skin.id };
+        return { id: skin.id } as ExistSkins;
       }
     }),
   );
-  const existSkins = existArr.filter(item => item !== undefined);
-  return existSkins;
+  return existArr.filter(item => item !== undefined) as ExistSkins[];
 };

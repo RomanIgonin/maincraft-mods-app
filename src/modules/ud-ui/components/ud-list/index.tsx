@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import * as S from './styles';
 import {
   BG_NEW,
@@ -10,12 +10,18 @@ import {
   VERSION,
 } from '@src/assets/constants/imagePaths';
 import screenNames from '@src/modules/navigation/screen-names';
-import Config from 'react-native-config';
 import { FlashList } from '@shopify/flash-list';
-import likeService from '@src/modules/core/services/LikeService';
 import { CategoryType } from '@src/modules/core/interfaces/categoryType';
 import { CategoryItem } from '@src/modules/core/interfaces/categoryItem';
 import { useNavigation } from '@react-navigation/native';
+import likeService from '@src/modules/your-like-list/domain/services/LikeService';
+import storageService from '@src/modules/core/services/StorageService';
+import useModsStore from '@src/modules/mods/store';
+import { formatBytes } from '@src/modules/settings/domain/helpers/formatBytes';
+import useMapsStore from '@src/modules/maps/store';
+import useSkinsStore from '@src/modules/skins/store';
+import useSeedsStore from '@src/modules/seeds/store';
+import useTranslationsStore from '@src/modules/translations/store';
 
 interface Props {
   typeCategory: CategoryType;
@@ -24,34 +30,73 @@ interface Props {
 
 const UDList = (props: Props) => {
   const { typeCategory, data } = props;
-
   const navigation = useNavigation<any>();
+  const { updateMod } = useModsStore();
+  const { updateMap } = useMapsStore();
+  const { updateSkin } = useSkinsStore();
+  const { updateSeed } = useSeedsStore();
+  const { currentLanguage } = useTranslationsStore();
 
-  const [likedListIds, setLikedListIds] = useState<CategoryItem[]>([]);
+  const [likedListIds, setLikedListIds] = useState<string[]>([]);
+
+  const updateCategory = useMemo(() => {
+    return typeCategory === 'mods'
+      ? updateMod
+      : typeCategory === 'maps'
+      ? updateMap
+      : typeCategory === 'skins'
+      ? updateSkin
+      : updateSeed;
+  }, [typeCategory, updateMap, updateMod, updateSeed, updateSkin]);
+
+  useEffect(() => {
+    getData().then();
+  }, []);
+
+  const getData = useCallback(async () => {
+    await storageService.getData(typeCategory).then(res => {
+      if (res) {
+        setLikedListIds(res as string[]);
+      }
+    });
+  }, [typeCategory]);
 
   const isLikePress = likeService.checkIsLikePress;
   const isLikeInList = likeService.checkLikeInListIds;
 
-  const screenName =
-    typeCategory === 'maps'
-      ? screenNames.mapDetailsScreen
-      : typeCategory === 'mods'
-      ? screenNames.modDetailsScreen
-      : typeCategory === 'skins'
-      ? screenNames.skinDetailsScreen
-      : screenNames.seedDetailsScreen;
+  const onPressLike = useCallback(
+    async (item: CategoryItem) => {
+      await likeService.setIdLikedItem(item.id, likedListIds, typeCategory);
+      const isLiked = likeService.checkIsLikePress(item.id, likedListIds);
+      if (isLiked) {
+        likeService.deleteLike(item.id).then(res => {
+          if (res) {
+            updateCategory(res);
+          }
+        });
+      } else {
+        likeService.putLike(item.id).then(res => {
+          if (res) {
+            updateCategory(res);
+          }
+        });
+      }
+      await getData();
+    },
+    [getData, likedListIds, typeCategory, updateCategory],
+  );
 
-  const onPressLike = async (item: any) => {
-    await likeService.setIdLikedItem(item, likedListIds, typeCategory);
-  };
+  const onPressListItem = useCallback(
+    (item: CategoryItem) => {
+      navigation.navigate(screenNames.udDetailsScreen, {
+        categoryId: item.id,
+        categoryType: typeCategory,
+      });
+    },
+    [navigation, typeCategory],
+  );
 
-  const onPressListItem = ({ item }: any) => {
-    navigation.navigate(screenName, {
-      categoryItem: item,
-    });
-  };
-
-  const TopSkinsList = useCallback(
+  const renderTopSkins = useCallback(
     ({ item, index }: any) => {
       return (
         <S.TopSkinsWrapper index={index}>
@@ -62,7 +107,7 @@ const UDList = (props: Props) => {
               <S.SkinsBgImage source={BG_SKIN}>
                 <S.SkinsImage
                   source={{
-                    uri: Config.API_URL + 'skins/' + item.imagePath,
+                    uri: item.picture.url,
                   }}
                 />
               </S.SkinsBgImage>
@@ -71,12 +116,17 @@ const UDList = (props: Props) => {
             <S.SkinsDetailWrap>
               <S.SkinsDownloadWrap>
                 <S.SkinsDownloadIcon source={DOWNLOAD_BLUE} />
-                <S.SkinsDownloadText fSize={11}>105k</S.SkinsDownloadText>
+                <S.SkinsDownloadText fSize={11}>
+                  {item.downloads}
+                </S.SkinsDownloadText>
               </S.SkinsDownloadWrap>
 
               <S.SkinsLikeWrap onPress={() => onPressLike(item)}>
-                <S.SkinsLikeIcon source={isLikeInList(item, likedListIds)} />
-                <S.SkinsLikeText fSize={11}>1.5k</S.SkinsLikeText>
+                <S.SkinsLikeIcon
+                  resizeMode="contain"
+                  source={isLikeInList(item.id, likedListIds)}
+                />
+                <S.SkinsLikeText fSize={11}>{item.likes}</S.SkinsLikeText>
               </S.SkinsLikeWrap>
             </S.SkinsDetailWrap>
           </S.TopSkins>
@@ -91,20 +141,25 @@ const UDList = (props: Props) => {
         </S.TopSkinsWrapper>
       );
     },
-    [likedListIds],
+    [isLikeInList, likedListIds, onPressLike, onPressListItem],
   );
 
-  const ListItem = useCallback(
-    ({ item }: any) => {
+  const renderDefaultItem = useCallback(
+    (item: CategoryItem) => {
+      const name =
+        currentLanguage && currentLanguage === 'en'
+          ? item.name.en
+          : item.name.ru;
+
       return (
         <S.ListItemWrapper>
           <S.ListItem>
             <S.ItemImageWrapper
-              onPress={() => onPressListItem({ item })}
+              onPress={() => onPressListItem(item)}
               activeOpacity={1}>
               <S.ItemImage
                 source={{
-                  uri: Config.API_URL + typeCategory + '/' + item.imagePath,
+                  uri: item.picture.url,
                 }}
               />
             </S.ItemImageWrapper>
@@ -116,19 +171,28 @@ const UDList = (props: Props) => {
                   color={'grayDark'}
                   ellipsizeMode={'tail'}
                   numberOfLines={1}>
-                  {item.engName}
+                  {name}
                 </S.ModsName>
 
                 <S.DetailsBottom>
-                  <S.SizeIcon source={SIZE} />
-                  <S.DetailsBottomText fSize={9}>
-                    {item.size}
-                  </S.DetailsBottomText>
+                  {typeCategory !== 'seeds' && (
+                    <>
+                      <S.SizeIcon source={SIZE} />
+                      <S.DetailsBottomText fSize={9}>
+                        {formatBytes(item.file.size)}
+                      </S.DetailsBottomText>
 
-                  <S.DownloadIcon source={DOWNLOAD_GRAY} />
-                  <S.DetailsBottomText fSize={9}>105k</S.DetailsBottomText>
+                      <S.DownloadIcon source={DOWNLOAD_GRAY} />
+                      <S.DetailsBottomText fSize={9}>
+                        {item.downloads}
+                      </S.DetailsBottomText>
+                    </>
+                  )}
 
-                  <S.VersionsIcon source={VERSION} />
+                  <S.VersionsIcon
+                    source={VERSION}
+                    isSeedsCategory={typeCategory === 'seeds'}
+                  />
                   <S.DetailsBottomText fSize={9}>
                     {item.version}
                   </S.DetailsBottomText>
@@ -137,12 +201,12 @@ const UDList = (props: Props) => {
 
               <S.LikeWrap
                 onPress={() => onPressLike(item)}
-                isLikePress={isLikePress(item, likedListIds)}>
-                <S.LikeIcon source={isLikeInList(item, likedListIds)} />
+                isLikePress={isLikePress(item.id, likedListIds)}>
+                <S.LikeIcon source={isLikeInList(item.id, likedListIds)} />
                 <S.LikeText
                   fSize={14}
-                  isLikePress={isLikePress(item, likedListIds)}>
-                  1.5k
+                  isLikePress={isLikePress(item.id, likedListIds)}>
+                  {item.likes}
                 </S.LikeText>
               </S.LikeWrap>
             </S.DetailsWrap>
@@ -158,23 +222,26 @@ const UDList = (props: Props) => {
         </S.ListItemWrapper>
       );
     },
-    [typeCategory, likedListIds],
+    [
+      typeCategory,
+      isLikePress,
+      likedListIds,
+      isLikeInList,
+      onPressListItem,
+      onPressLike,
+    ],
   );
 
   const keyExtractor = (item: any) => item.id;
   const renderItem = useCallback(
     ({ item, index }: any) => {
-      return (
-        <>
-          {typeCategory === 'skins' ? (
-            <TopSkinsList item={item} index={index} />
-          ) : (
-            <ListItem item={item} />
-          )}
-        </>
-      );
+      if (typeCategory === 'skins') {
+        return renderTopSkins({ item, index });
+      } else {
+        return renderDefaultItem(item);
+      }
     },
-    [typeCategory],
+    [renderDefaultItem, renderTopSkins, typeCategory],
   );
 
   return (
@@ -194,7 +261,7 @@ const UDList = (props: Props) => {
       ) : (
         <FlashList
           showsVerticalScrollIndicator={false}
-          data={data}
+          data={data.slice(0)}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           estimatedItemSize={218}

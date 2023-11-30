@@ -1,59 +1,109 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+} from 'react';
 import * as S from './styles';
 import { CategoryItem } from '@src/modules/core/interfaces/categoryItem';
 import { CategoryType } from '@src/modules/core/interfaces/categoryType';
-import Config from 'react-native-config';
 import {
   ARROW_LEFT,
+  BG_SKIN,
   DOWNLOAD_GRAY,
   DOWNLOAD_VIDEO,
+  LIKE_GRAY,
+  PLAY,
   SHARE,
   SIZE,
+  SKINS_LEFT_ARROW,
+  SKINS_RIGHT_ARROW,
   VERSION,
 } from '@src/assets/constants/imagePaths';
 import { navigateBack } from '@src/modules/navigation/RootNavigation';
-import likeService from '@src/modules/core/services/LikeService';
 import storageService from '@src/modules/core/services/StorageService';
-import FileViewer from 'react-native-file-viewer';
 // @ts-ignore
 import ProgressBar from 'react-native-progress/Bar';
 import { theme } from '@styles/theme';
-import { Alert } from 'react-native';
+import { Alert, Linking } from 'react-native';
 import UDCarouselSlider from '@src/modules/ud-ui/components/ud-carousel';
-import Modal from 'react-native-modal';
-import useSettingsStore from '@src/modules/settings/store';
 import { getExistInfo } from '@src/modules/ud-ui/hooks/getExistInfo';
-import useModsStore from '@src/modules/mods/store';
-import useMapsStore from '@src/modules/maps/store';
 import useSkinsStore from '@src/modules/skins/store';
-import useSeedsStore from '@src/modules/seeds/store';
 import useFile from '@src/modules/ud-ui/hooks/useFile';
 import { useShare } from '@src/modules/ud-ui/hooks/useShare';
+import advertisingService from '@src/modules/advertising/services/AdvertisingService';
+import likeService from '@src/modules/your-like-list/domain/services/LikeService';
+import DownloadErrorModal from '@src/modules/ud-ui/components/ud-download-container/error-modal';
+import { HowToInstallText } from './styles';
+import LottieView from 'lottie-react-native';
+import useModsStore from '@src/modules/mods/store';
+import filesService from '@src/modules/files/domain/services/FilesServise';
+import { formatBytes } from '@src/modules/settings/domain/helpers/formatBytes';
+import useMapsStore from '@src/modules/maps/store';
+import useSeedsStore from '@src/modules/seeds/store';
+import useTranslationsStore from '@src/modules/translations/store';
+import { useAppTranslation } from '@src/modules/translations/domain/hooks/use-app-translation';
 
 interface Props {
   categoryItem: CategoryItem;
   categoryType: CategoryType;
-  setIsRewardedVideoOpen: (bool: boolean) => void;
-  refresh: () => void;
+  setItemId: (itemId: string) => void;
 }
 
 export default function UDDownloadContainer(props: Props) {
-  const { categoryItem, categoryType, setIsRewardedVideoOpen, refresh } = props;
-  const { engName, fileName, filepath } = categoryItem;
+  const { categoryItem, categoryType, setItemId } = props;
+  const { file, filepath, id, downloads, likes } = categoryItem;
 
-  const { loadCacheSize } = useSettingsStore();
-  const { loadExistMods } = useModsStore();
-  const { loadExistMaps } = useMapsStore();
-  const { loadExistSkins } = useSkinsStore();
-  const { loadExistSeeds } = useSeedsStore();
+  const [numLikes, setNumLikes] = useState(likes);
 
+  const { t } = useAppTranslation(['shared']);
+
+  const { updateMod } = useModsStore();
+  const { updateMap } = useMapsStore();
+  const { skins, updateSkin } = useSkinsStore();
+  const { updateSeed } = useSeedsStore();
+  const { currentLanguage } = useTranslationsStore();
+  const { share } = useShare();
   const isExist = getExistInfo(categoryItem, categoryType);
+  const name = useMemo(
+    () =>
+      currentLanguage && currentLanguage === 'en'
+        ? categoryItem.name.en
+        : categoryItem.name.ru,
+    [categoryItem.id, currentLanguage],
+  );
 
-  const [likedListIds, setLikedListIds] = useState<CategoryItem[]>([]);
+  const [likedListIds, setLikedListIds] = useState<string[]>([]);
   const [isDownloading, setDownloading] = useState(false);
   const [percentage, setPercentage] = useState<number>(0);
   const [isImageDelayLoading, setIsImageDelayLoading] = useState(true);
   const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+
+  const { downloadFile, openFile } = useFile({ setPercentage });
+
+  const isSkinsCategory = categoryType === 'skins';
+  const isSeedsCategory = categoryType === 'seeds';
+  const fullName = categoryItem.file?.fullName;
+  const generationKey = categoryItem?.generationKey;
+
+  const appUrl = 'https://maincraftmodsapp.page.link';
+  const urlShare = appUrl + '/' + categoryType + '/' + String(id);
+
+  const updateCategory = useMemo(() => {
+    return categoryType === 'mods'
+      ? updateMod
+      : categoryType === 'maps'
+      ? updateMap
+      : categoryType === 'skins'
+      ? updateSkin
+      : updateSeed;
+  }, [categoryType, updateMap, updateMod, updateSeed, updateSkin]);
+
+  const isLiked = useMemo(
+    () => likeService.checkIsLikePress(categoryItem.id, likedListIds),
+    [categoryItem.id, likedListIds],
+  );
 
   useEffect(() => {
     setTimeout(() => {
@@ -61,109 +111,174 @@ export default function UDDownloadContainer(props: Props) {
     }, 500);
   }, []);
 
-  const urlDownload = Config.API_URL + categoryType + '/';
-  const urlShare = Config.API_URL + categoryType + '/' + engName;
+  useEffect(() => {
+    getData().then();
+  }, []);
 
-  const { download } = useFile({ setPercentage });
+  useEffect(() => {
+    if (isLiked) {
+      animationRef.current?.play(0, 65);
+    }
+  }, [isLiked]);
 
-  const onError = (err: any) => {
-    Alert.alert('Error: ', String(err), [{ text: 'Cancel', style: 'cancel' }]);
-  };
-
-  const downloadFile = async () => {
-    setDownloading(true);
-    const { statusCode, filepath } = await download({
-      url: urlDownload,
-      filename: fileName,
+  const getData = useCallback(async () => {
+    await storageService.getData(categoryType).then(res => {
+      if (res) {
+        setLikedListIds(res as string[]);
+      }
     });
-    refresh();
-    loadCacheSize();
-    loadExistMods();
-    loadExistMaps();
-    loadExistSkins();
-    loadExistSeeds();
-    setDownloading(false);
+  }, [categoryType]);
+
+  const download = useCallback(async () => {
+    const statusCode = await downloadFile(
+      setDownloading,
+      categoryType,
+      fullName,
+      setIsErrorModalVisible,
+    );
     if (statusCode === 200) {
-      await openFile(filepath);
-    } else {
-      onError('Ошибка');
+      await filesService
+        .putDownload(categoryType, categoryItem.id)
+        .then(res => {
+          if (res) {
+            updateCategory(res);
+          }
+        });
     }
-  };
-
-  const openFile = async (filepath: string) => {
-    try {
-      await FileViewer.open(filepath, {
-        showOpenWithDialog: true,
-        showAppsSuggestions: false,
-      });
-    } catch {
-      setIsErrorModalVisible(true);
-    }
-  };
-
-  const openRewardedVideo = () => {
-    setIsRewardedVideoOpen(true);
-    setTimeout(() => {
-      setIsRewardedVideoOpen(false);
-    }, 650);
-  };
+  }, [downloadFile, categoryType, fullName, categoryItem.id, updateCategory]);
 
   const onDownloadPressed = useCallback(async () => {
     try {
       if (isExist) {
-        await openFile(filepath);
+        await openFile(filepath, setIsErrorModalVisible);
       } else {
-        openRewardedVideo();
-        await downloadFile();
+        await advertisingService.showRewardedVideo(
+          download,
+          isSeedsCategory,
+          fullName,
+        );
       }
     } catch (err) {
-      onError(err);
+      Alert.alert('Error: ', String(err), [
+        { text: 'Cancel', style: 'cancel' },
+      ]);
       setDownloading(false);
     }
-  }, [isExist]);
+  }, [download, filepath, isExist, isSeedsCategory, openFile, fullName]);
 
-  const isLikePress = likeService.checkIsLikePress;
-  const isLikeInList = likeService.checkLikeInListIds;
+  const onPressLike = useCallback(async () => {
+    await likeService.setIdLikedItem(
+      categoryItem.id,
+      likedListIds,
+      categoryType,
+    );
+    if (isLiked) {
+      setNumLikes(prevState => prevState - 1);
+      animationRef.current?.play(65, 110);
+      likeService.deleteLike(categoryItem.id).then(res => {
+        if (res) {
+          updateCategory(res);
+        }
+      });
+    } else {
+      setNumLikes(prevState => prevState + 1);
+      animationRef.current?.play(0, 65);
+      likeService.putLike(categoryItem.id).then(res => {
+        if (res) {
+          updateCategory(res);
+        }
+      });
+    }
+    await getData();
+  }, [
+    categoryItem,
+    likedListIds,
+    categoryType,
+    isLiked,
+    getData,
+    updateCategory,
+  ]);
 
-  useEffect(() => {
-    getData();
-  }, []);
-
-  const getData = async () => {
-    await storageService.getData(categoryType).then(res => {
-      if (res) setLikedListIds(res);
-    });
-  };
-
-  const onPressLike = async (item: any) => {
-    await likeService.setIdLikedItem(item, likedListIds, categoryType);
-    getData();
-  };
-
-  const onPressArrowBack = () => {
-    navigateBack();
-  };
+  const animationRef = useRef<LottieView>(null);
 
   const onPressShare = useCallback(() => {
-    useShare(engName, urlShare);
-  }, [engName, urlShare]);
+    share(name, urlShare);
+  }, [name, share, urlShare]);
 
-  const onPressBackButton = () => {
-    setIsErrorModalVisible(false);
+  const buttonTextResolver = useCallback(() => {
+    if (isSeedsCategory) {
+      return t('copy_seed');
+    } else if (isExist) {
+      return t('open');
+    } else if (isDownloading) {
+      return `${t('loading')}... ${percentage}%`;
+    } else {
+      return t('download');
+    }
+  }, [isDownloading, isExist, isSeedsCategory, percentage, t]);
+
+  const TopImageSkins = useCallback(() => {
+    return (
+      <S.SkinsImageWrap>
+        <S.SkinsBgImage source={BG_SKIN}>
+          <S.SkinsImage
+            source={{
+              uri: categoryItem.picture.url,
+            }}
+          />
+        </S.SkinsBgImage>
+
+        <S.SkinsCounter fSize={20}>
+          {skins.indexOf(categoryItem) + 1} / {skins.length}
+        </S.SkinsCounter>
+      </S.SkinsImageWrap>
+    );
+  }, [categoryItem, skins]);
+
+  const TopImageCategory = useCallback(() => {
+    return (
+      <UDCarouselSlider
+        isImageDelayLoading={isImageDelayLoading}
+        imageData={[categoryItem]}
+        height={220}
+      />
+    );
+  }, [categoryItem.id, isImageDelayLoading]);
+
+  const onPressPrevSkins = () => {
+    const indexPrev = skins.indexOf(categoryItem) - 1;
+    if (indexPrev >= 0) {
+      const prevItem = skins[indexPrev];
+      setItemId(prevItem.id);
+    }
+  };
+
+  const onPressNextSkins = () => {
+    const indexNext = skins.indexOf(categoryItem) + 1;
+    if (indexNext < skins.length) {
+      const nextItem = skins[indexNext];
+      setItemId(nextItem.id);
+    }
+  };
+
+  const onPressHowInstall = async () => {
+    const supported = await Linking.canOpenURL(categoryItem.videoUrl.en);
+    if (supported) {
+      await Linking.openURL(categoryItem.videoUrl.en);
+    } else {
+      Alert.alert(
+        `Don't know how to open this URL: ${categoryItem.videoUrl.en}`,
+      );
+    }
   };
 
   return (
     <S.Container>
       <S.ShadowCarousel>
-        <UDCarouselSlider
-          isImageDelayLoading={isImageDelayLoading}
-          imageData={[categoryItem]}
-          height={220}
-          categoryType={categoryType}
-        />
+        {isSkinsCategory ? <TopImageSkins /> : <TopImageCategory />}
       </S.ShadowCarousel>
 
-      <S.ArrowBackWrap onPress={onPressArrowBack}>
+      <S.ArrowBackWrap onPress={() => navigateBack()}>
         <S.ArrowBack source={ARROW_LEFT} />
       </S.ArrowBackWrap>
 
@@ -171,78 +286,137 @@ export default function UDDownloadContainer(props: Props) {
         <S.Share source={SHARE} />
       </S.ShareWrap>
 
-      <S.LikeWrap onPress={() => onPressLike(categoryItem)} activeOpacity={1}>
-        <S.LikeBg isLikePress={isLikePress(categoryItem, likedListIds)}>
-          <S.Like source={isLikeInList(categoryItem, likedListIds)} />
-        </S.LikeBg>
-        <S.LikeCounter fSize={15}>1.5k</S.LikeCounter>
+      <S.LikeWrap
+        onPress={onPressLike}
+        activeOpacity={1}
+        isSkinsCategory={isSkinsCategory}>
+        <LottieView
+          style={{
+            left: '15%',
+            bottom: '10%',
+            width: 61,
+            height: 61,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.3,
+            shadowRadius: 1,
+          }}
+          loop={false}
+          ref={animationRef}
+          source={require('../../../../assets/animations/Like_2.json')}
+          duration={1500}
+        />
+        {!isSkinsCategory && (
+          <S.LikeCounter fSize={15}>{numLikes}</S.LikeCounter>
+        )}
+
+        {/* <S.LikeBg
+          isLikePress={isLikePress(categoryItem.id, likedListIds)}
+          isSkinsCategory={isSkinsCategory}>
+          <S.Like
+            resizeMode="contain"
+            source={isLikeInList(categoryItem.id, likedListIds)}
+          />
+        </S.LikeBg> */}
       </S.LikeWrap>
 
-      <S.NameCategoryItem fSize={24} color={'grayDark'}>
-        {engName}
-      </S.NameCategoryItem>
+      {!isSkinsCategory && (
+        <S.NameCategoryItem fSize={24} color={'grayDark'}>
+          {name}
+        </S.NameCategoryItem>
+      )}
 
-      <S.DetailsWrap>
-        <S.SizeIcon source={SIZE} />
-        <S.DetailsBottomText fSize={13}>
-          {categoryItem.size}
-        </S.DetailsBottomText>
+      {!isSeedsCategory && !isSkinsCategory && (
+        <S.DetailsWrap isSkinsCategory={false}>
+          <S.SizeIcon source={SIZE} />
+          <S.DetailsBottomText fSize={13}>
+            {formatBytes(file.size)}
+          </S.DetailsBottomText>
 
-        <S.DownloadIcon source={DOWNLOAD_GRAY} />
-        <S.DetailsBottomText fSize={13}>105k</S.DetailsBottomText>
+          <S.DownloadIcon source={DOWNLOAD_GRAY} />
+          <S.DetailsBottomText fSize={13}>{downloads}</S.DetailsBottomText>
 
-        <S.VersionsIcon source={VERSION} />
-        <S.DetailsBottomText fSize={13}>
-          {categoryItem.version}
-        </S.DetailsBottomText>
-      </S.DetailsWrap>
+          <S.VersionsIcon source={VERSION} />
+          <S.DetailsBottomText fSize={13}>
+            {categoryItem.version}
+          </S.DetailsBottomText>
+        </S.DetailsWrap>
+      )}
 
-      <S.DownloadWrap onPress={() => onDownloadPressed()}>
-        <S.DownloadTextWrap>
-          <S.DownloadText fSize={24} color={'light'}>
-            {isExist
-              ? 'Open'
-              : isDownloading
-              ? `Loading... ${percentage}%`
-              : 'Download'}
-          </S.DownloadText>
+      <S.DownloadButtonsPanel isSkinsCategory={isSkinsCategory}>
+        {isSkinsCategory && (
+          <S.SkinsLeftArrowWrap onPress={() => onPressPrevSkins()}>
+            <S.SkinsLeftArrow source={SKINS_LEFT_ARROW} />
+          </S.SkinsLeftArrowWrap>
+        )}
 
-          {!isExist && !isDownloading && (
-            <S.DownloadVideoIcon source={DOWNLOAD_VIDEO} />
-          )}
-        </S.DownloadTextWrap>
+        <S.DownloadWrap
+          onPress={onDownloadPressed}
+          isSkinsCategory={isSkinsCategory}>
+          <S.DownloadTextWrap>
+            <S.DownloadText color={'light'}>
+              {buttonTextResolver()}
+            </S.DownloadText>
 
-        <ProgressBar
-          progress={isDownloading ? percentage / 100 : 1}
-          width={null}
-          height={48}
-          color={theme.colors.green}
-          unfilledColor={'#CCCCCC'}
-          borderWidth={0}
-          borderRadius={10}
-        />
-      </S.DownloadWrap>
+            {!isExist && !isDownloading && (
+              <S.DownloadVideoIcon
+                source={DOWNLOAD_VIDEO}
+                resizeMode={'contain'}
+              />
+            )}
+          </S.DownloadTextWrap>
 
-      <Modal
-        isVisible={isErrorModalVisible}
-        backdropOpacity={0.3}
-        animationIn={'zoomIn'}
-        animationOut={'zoomOut'}
-        onRequestClose={onPressBackButton}>
-        <S.ErrorModalWrap>
-          <S.Title fSize={26} fStyle={'caption700'}>
-            Error
-          </S.Title>
-          <S.ErrorMessage fStyle={'caption400'} fSize={20}>
-            Minecraft is not installed
-          </S.ErrorMessage>
-          <S.OkButtonWrap onPress={() => setIsErrorModalVisible(false)}>
-            <S.OkButtonText fStyle={'caption700'} color={'green'} fSize={20}>
-              OK
-            </S.OkButtonText>
-          </S.OkButtonWrap>
-        </S.ErrorModalWrap>
-      </Modal>
+          <ProgressBar
+            progress={isDownloading ? percentage / 100 : 1}
+            width={null}
+            height={50}
+            color={theme.colors.green}
+            unfilledColor={'#CCCCCC'}
+            borderWidth={0}
+            borderRadius={10}
+          />
+        </S.DownloadWrap>
+
+        {isSkinsCategory && (
+          <S.SkinsArrowRightWrap onPress={() => onPressNextSkins()}>
+            <S.SkinsRightArrow source={SKINS_RIGHT_ARROW} />
+          </S.SkinsArrowRightWrap>
+        )}
+      </S.DownloadButtonsPanel>
+
+      <S.HowToInstallWrap
+        onPress={() => onPressHowInstall()}
+        isSkinsCategory={isSkinsCategory}>
+        <HowToInstallText color={'light'}>
+          {t('how_to_install')}
+        </HowToInstallText>
+        <S.PlayIcon source={PLAY} resizeMode={'contain'} />
+      </S.HowToInstallWrap>
+
+      {isSkinsCategory && (
+        <S.DetailsWrap isSkinsCategory={isSkinsCategory}>
+          <S.SizeIcon source={SIZE} />
+          <S.DetailsBottomText fSize={13}>
+            {formatBytes(file.size)}
+          </S.DetailsBottomText>
+
+          <S.DownloadIcon source={DOWNLOAD_GRAY} />
+          <S.DetailsBottomText fSize={13}>{downloads}</S.DetailsBottomText>
+
+          <S.LikeDetails resizeMode="contain" source={LIKE_GRAY} />
+          <S.DetailsBottomText fSize={13}>{likes}</S.DetailsBottomText>
+        </S.DetailsWrap>
+      )}
+
+      {isSeedsCategory && generationKey && (
+        <S.SeedKey color={'grayDark'} fSize={20}>
+          {t('seed')}: {generationKey}
+        </S.SeedKey>
+      )}
+
+      <DownloadErrorModal
+        isErrorModalVisible={isErrorModalVisible}
+        setIsErrorModalVisible={setIsErrorModalVisible}
+      />
     </S.Container>
   );
 }

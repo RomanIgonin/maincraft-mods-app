@@ -11,15 +11,21 @@ import {
 } from '@src/assets/constants/imagePaths';
 import SettingsMenu from '@src/modules/settings/ui/components/settings-menu';
 import { Alert, Linking, ScrollView } from 'react-native';
+import { useAppTranslation } from '@src/modules/translations/domain/hooks/use-app-translation';
+import analyticService from '@src/modules/analytics/services/AnayticService';
 
 type ButtonType = 'Discord' | 'Youtube';
 
 export default function SettingsScreen() {
   const navigation = useNavigation<any>();
 
-  const onPressPremium = () => {
-    navigation.navigate(screenNames.premium);
-  };
+  const { t } = useAppTranslation('shared');
+
+  // TODO: На время сдачи релиза пока скроем упоминания о премиуме
+  // В MC-55 добавлен модуль subscription, в нем реализована верстка и почти вся логика
+  // const onPressPremium = () => {
+  //   navigation.navigate(screenNames.premium);
+  // };
 
   const onPressDiscordYoutube = async (buttonType: ButtonType) => {
     const url =
@@ -32,6 +38,12 @@ export default function SettingsScreen() {
     } else {
       Alert.alert(`Don't know how to open this URL: ${url}`);
     }
+    if (buttonType === 'Discord') {
+      analyticService.reportEvent('discord_settings');
+    }
+    if (buttonType === 'Youtube') {
+      analyticService.reportEvent('youtube_settings');
+    }
   };
 
   const onPressYourLikeList = () => {
@@ -41,14 +53,14 @@ export default function SettingsScreen() {
   return (
     <S.Container>
       <S.HeaderShadow>
-        <UDHeader title={'Settings'} />
+        <UDHeader title={t('settings')} />
       </S.HeaderShadow>
 
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
         <S.Wrap>
-          <S.PremiumButtonWrap onPress={onPressPremium}>
-            <S.PremiumButton source={PREMIUM_BTN} resizeMode={'stretch'} />
-          </S.PremiumButtonWrap>
+          {/*<S.PremiumButtonWrap onPress={onPressPremium}>*/}
+          {/*  <S.PremiumButton source={PREMIUM_BTN} resizeMode={'stretch'} />*/}
+          {/*</S.PremiumButtonWrap>*/}
 
           <S.ButtonsWrap>
             <S.DiscordYoutubeWrap>

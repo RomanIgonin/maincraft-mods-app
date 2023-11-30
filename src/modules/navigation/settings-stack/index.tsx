@@ -1,9 +1,9 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import screenNames from '../screen-names';
-import YourLikeListScreen from '@src/modules/your-like-list/ui/screens';
 import SettingsScreen from '@src/modules/settings/ui/screens';
 import AboutAppScreen from '@src/modules/settings/ui/screens/about-app';
+import { renderContent } from '@src/modules/navigation/main-menu-stack/helper';
 
 const Stack = createStackNavigator();
 
@@ -15,11 +15,8 @@ export default function SettingsStack() {
         headerShown: false,
       }}>
       <Stack.Screen name={screenNames.settings} component={SettingsScreen} />
-      <Stack.Screen
-        name={screenNames.yourLikeList}
-        component={YourLikeListScreen}
-      />
       <Stack.Screen name={screenNames.aboutApp} component={AboutAppScreen} />
+      {renderContent()}
     </Stack.Navigator>
   );
 }

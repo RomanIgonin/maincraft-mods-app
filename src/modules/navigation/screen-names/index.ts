@@ -3,19 +3,17 @@ const screenNames = {
   mainMenuNavigator: 'MainMenuNavigator',
   tutorial: 'Tutorial',
   meme: 'Meme',
-  settings: 'Settings',
+  settings: 'SettingsScreen',
+  settingsStack: 'Settings',
   search: 'Search',
-  premium: 'Premium',
   yourLikeList: 'YourLikeList',
   maps: 'Maps',
-  mapDetailsScreen: 'MapDetailsScreen',
   mods: 'Mods',
-  modDetailsScreen: 'ModDetailsScreen',
   skins: 'Skins',
-  skinDetailsScreen: 'SkinDetailsScreen',
   seeds: 'Seeds',
-  seedDetailsScreen: 'SeedDetailsScreen',
+  udDetailsScreen: 'UDDetailsScreen',
   aboutApp: 'AboutApp',
+  dailySelection: 'DailySelection',
 };
 
 export default screenNames;

@@ -19,7 +19,9 @@ export const HeaderWithIcon = styled.View`
   justify-content: center;
 `;
 
-export const HeaderText = styled(UDText)``;
+export const HeaderText = styled(UDText)`
+
+`;
 
 export const HeaderIcon = styled.Image`
   margin-left: 4px;

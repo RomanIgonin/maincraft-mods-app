@@ -23,11 +23,16 @@ export const CHRISTMAS = require(`${icons}/christmas/christmas.png`);
 export const ARROW_LEFT = require(`${icons}/arrow-left/arrow-left.png`);
 export const CLOSE = require(`${icons}/close/close.png`);
 export const SHARE = require(`${icons}/share/share.png`);
+export const SHARE_FILL = require(`${icons}/share-fill/share-fill.png`);
 export const DOWNLOAD_VIDEO = require(`${icons}/download-video/download-video.png`);
 export const ARROW_RIGHT_DESCRIPTION = require(`${icons}/arrow-right-description/arrow-right-description.png`);
 export const ARROW_DOWN_DESCRIPTION = require(`${icons}/arrow-down-description/arrow-down-description.png`);
 export const RED_CIRCLE_ADS = require(`${icons}/red-circle-ads/red-circle-ads.png`);
 export const SAD = require(`${icons}/sad/sad.png`);
+export const SKINS_LEFT_ARROW = require(`${icons}/skins-left-arrow/skins-left-arrow.png`);
+export const SKINS_RIGHT_ARROW = require(`${icons}/skins-right-arrow/skins-right-arrow.png`);
+export const VERIFIED = require(`${icons}/verified/verified.png`);
+export const PLAY = require(`${icons}/play/play.png`);
 
 export const ADVERTISING = require(`${settingsKit}/advertising/advertising.png`);
 export const DATA_CLEANING = require(`${settingsKit}/data-cleaning/data-cleaning.png`);
@@ -45,6 +50,7 @@ export const BG_NEW = require(`${images}/bg/bg-new/bg-new.png`);
 export const BG_NEW_SKINS = require(`${images}/bg/bg-new-skins/bg-new-skins.png`);
 export const BG_NEW_ADDONS = require(`${images}/bg/bg-new-addons/bg-new-addons.png`);
 export const BG_SKIN = require(`${images}/bg/bg-skin/bg-skin.png`);
+export const BG_MEME = require(`${images}/bg/bg-meme/bg-meme.png`);
 
 export const BG_TUTOR_MAPS = require(`${tutorial}/tutor-maps-bg/tutor-maps-bg.png`);
 export const BG_TUTOR_MODS = require(`${tutorial}/tutor-mods-bg/tutor-mods-bg.png`);

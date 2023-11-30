@@ -32,7 +32,7 @@ export const SkeletonItemWrap = styled(SkeletonContent)`
 `;
 
 export const ListItemWrap = styled.View`
-  box-shadow: ${Platform.OS === 'ios' ? `0 2px 3px rgba(0, 0, 0, 0.25);` : ''};
+  box-shadow: ${Platform.OS === 'ios' ? '0 2px 3px rgba(0, 0, 0, 0.25);' : ''};
   margin: 0 6px 12px 6px;
   background-color: white;
   border-radius: 10px;
@@ -87,6 +87,9 @@ export const DetailsBottom = styled.View`
 
 export const SizeIcon = styled.Image`
   margin-right: 2px;
+  margin-right: 1.25px;
+width: 15.76px;
+  height: 12px;
 `;
 
 export const DetailsBottomText = styled(UDText)`
@@ -94,11 +97,17 @@ export const DetailsBottomText = styled(UDText)`
 `;
 
 export const DownloadIcon = styled.Image`
+margin-right: 1.25px;
+width: 10.84px;
+  height: 11px;
   margin-left: 2px;
 `;
 
 export const VersionsIcon = styled.Image`
-  margin-left: 2px;
+
+width: 16.75px;
+  height: 13px;
+  margin-left: 0px;
 `;
 
 interface LikeProps {

@@ -8,7 +8,7 @@ export const ModalContainer = styled.View`
   padding: 20px 0 0 0;
   align-items: center;
   ${Platform.OS === 'ios'
-    ? `box-shadow: 0 0px 30px rgba(0, 0, 0, 0.25);`
+    ? 'box-shadow: 0 0px 30px rgba(0, 0, 0, 0.25);'
     : 'elevation: 5;'};
 `;
 

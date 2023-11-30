@@ -7,6 +7,12 @@ project(':react-native-fs').projectDir = new File(settingsDir, '../node_modules/
 include ':app'
 includeBuild('../node_modules/react-native-gradle-plugin')
 
+include ':appcenter-crashes'
+  project(':appcenter-crashes').projectDir = new File(rootProject.projectDir, '../node_modules/appcenter-crashes/android')
+  include ':appcenter-analytics'
+  project(':appcenter-analytics').projectDir = new File(rootProject.projectDir, '../node_modules/appcenter-analytics/android')
+  include ':appcenter'
+  project(':appcenter').projectDir = new File(rootProject.projectDir, '../node_modules/appcenter/android')
 
 if (settings.hasProperty("newArchEnabled") && settings.newArchEnabled == "true") {
     include(":ReactAndroid")

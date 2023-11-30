@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import * as S from './styles';
 import {
   ARROW_LEFT,
@@ -8,7 +8,6 @@ import {
 } from '@src/assets/constants/imagePaths';
 import { TouchableOpacity } from 'react-native';
 import { navigateBack } from '@src/modules/navigation/RootNavigation';
-import { CategoriesArray } from '@src/modules/search/domain/constants/categoryArray';
 import useModsStore from '@src/modules/mods/store';
 import useMapsStore from '@src/modules/maps/store';
 import useSkinsStore from '@src/modules/skins/store';
@@ -17,21 +16,11 @@ import UDList from '@src/modules/ud-ui/components/ud-list';
 import { CategoryType } from '@src/modules/core/interfaces/categoryType';
 import { CategoryItem } from '@src/modules/core/interfaces/categoryItem';
 import { RouteProp } from '@react-navigation/native';
-
-const MockSearchHints = [
-  'Hagi Wagi',
-  'Winter',
-  'Dino',
-  'Hagi Wagi',
-  'Winter',
-  'Dino',
-  'Hagi Wagi',
-  'Winter',
-  'Dino',
-];
+import { useAppTranslation } from '@src/modules/translations/domain/hooks/use-app-translation';
+import useHintsStore from '@src/modules/search/store';
 
 type Props = {
-  route: RouteProp<
+  route?: RouteProp<
     {
       params: {
         categoryType: CategoryType;
@@ -42,12 +31,13 @@ type Props = {
 };
 
 export default function SearchScreen({ route }: Props) {
-  const categoryType = route.params.categoryType;
-
+  const categoryType = route?.params.categoryType;
+  const { t } = useAppTranslation('shared');
   const { mods } = useModsStore();
   const { maps } = useMapsStore();
   const { skins } = useSkinsStore();
   const { seeds } = useSeedsStore();
+  const { hints } = useHintsStore();
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [searchCategory, setSearchCategory] = useState<CategoryType>(
@@ -69,35 +59,64 @@ export default function SearchScreen({ route }: Props) {
     );
   };
 
-  const onPressCategory = (item: CategoryType) => {
-    setSearchCategory(item.toLowerCase());
+  const onPressCategory = (item: string) => {
+    const fItem =
+      item === t('mods')
+        ? 'mods'
+        : item === t('maps')
+        ? 'maps'
+        : item === t('skins')
+        ? 'skins'
+        : 'seeds';
+    setSearchCategory(fItem);
     setSearchQuery('');
   };
 
   const onPressHint = (item: string) => {
+    onChangeSearchQuery(item);
     setSearchQuery(item);
   };
+
+  const CategoriesArray = useMemo(
+    () => [t('mods'), t('maps'), t('skins'), t('seeds')],
+    [t],
+  );
 
   const onChangeSearchQuery = (value: string) => {
     setSearchQuery(value);
 
     const requiredStore =
-      searchCategory === 'mods'
+      searchCategory === t('mods')
         ? mods
-        : searchCategory === 'maps'
+        : searchCategory === t('maps')
         ? maps
-        : searchCategory === 'skins'
+        : searchCategory === t('skins')
         ? skins
         : seeds;
 
-    const list = requiredStore.filter(item =>
-      item.tags.toLowerCase().includes(value.toLowerCase()),
-    );
+    const list = requiredStore.filter(item => {
+      return item.tags.split(' ').find(i => {
+        return i.toLowerCase().includes(value.toLowerCase());
+      });
+    });
     setFilteredList(list);
   };
 
-  const isSearchCategory = (item: any) => {
-    return searchCategory === item.toLowerCase() ? true : false;
+  const isSearchCategory = (item: string) => {
+    const fItem =
+      item === t('mods')
+        ? 'mods'
+        : item === t('maps')
+        ? 'maps'
+        : item === t('skins')
+        ? 'skins'
+        : 'seeds';
+    return searchCategory === fItem;
+  };
+
+  const resolveSearchHints = () => {
+    const res = hints.find(i => i.type === searchCategory);
+    return res ? res : { hints: [''] };
   };
 
   return (
@@ -110,7 +129,7 @@ export default function SearchScreen({ route }: Props) {
 
           <S.SearchWrap>
             <S.Search
-              placeholder={'Search'}
+              placeholder={t('search')}
               placeholderTextColor={'rgba(255,255,255,0.5)'}
               value={searchQuery}
               onChangeText={value => onChangeSearchQuery(value)}
@@ -129,7 +148,7 @@ export default function SearchScreen({ route }: Props) {
               isSelected={isSearchCategory(item)}
               onPress={() => onPressCategory(item)}>
               <S.Category isSelected={isSearchCategory(item)} fSize={13}>
-                {item}
+                {item.toUpperCase()}
               </S.Category>
             </S.CategoryWrap>
           );
@@ -138,7 +157,7 @@ export default function SearchScreen({ route }: Props) {
 
       {searchQuery === '' ? (
         <S.HintsWrap>
-          {MockSearchHints.map(item => {
+          {resolveSearchHints().hints.map((item: string) => {
             return (
               <TouchableOpacity onPress={() => onPressHint(item)}>
                 <S.Hint fSize={17}>{item}</S.Hint>

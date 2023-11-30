@@ -51,6 +51,7 @@ target 'MaincraftModsApp' do
     installer.pods_project.targets.each do |t|
         t.build_configurations.each do |config|
           config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.4'
+          config.build_settings['ARCHS[sdk=iphonesimulator*]'] = 'x86_64'
         end
       end
     react_native_post_install(
@@ -63,6 +64,13 @@ target 'MaincraftModsApp' do
   end
 end
 
-target 'OneSignalNotificationServiceExtension' do
-  pod 'OneSignalXCFramework', '>= 3.0', '< 4.0'
+target 'onesignal' do
+    pod 'OneSignalXCFramework/OneSignal', '>= 5.0.0', '< 6.0'
+    pod 'OneSignalXCFramework/OneSignalCore', '>= 5.0.0', '< 6.0'
+    pod 'OneSignalXCFramework/OneSignalExtension', '>= 5.0.0', '< 6.0'
+    pod 'OneSignalXCFramework/OneSignalInAppMessages', '>= 5.0.0', '< 6.0'
+    pod 'OneSignalXCFramework/OneSignalNotifications', '>= 5.0.0', '< 6.0'
+    pod 'OneSignalXCFramework/OneSignalOSCore', '>= 5.0.0', '< 6.0'
+    pod 'OneSignalXCFramework/OneSignalOutcomes', '>= 5.0.0', '< 6.0'
+    pod 'OneSignalXCFramework/OneSignalUser', '>= 5.0.0', '< 6.0'
 end

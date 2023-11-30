@@ -36,26 +36,24 @@ class NotificationsService {
   public async requestNotificationsPermissions(): Promise<boolean> {
     if (Platform.OS === 'ios') {
       const authStatus = await messaging().requestPermission();
-      const enabled =
+      return (
         authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-      return enabled;
-      return false;
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL
+      );
     } else {
       const authStatus = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
       );
-      const enabled = authStatus === 'granted';
-      return enabled;
+      return authStatus === 'granted';
     }
   }
 
   public async getNotificationPermission(): Promise<boolean> {
     const status = await messaging().hasPermission();
-    const enabled =
+    return (
       status === messaging.AuthorizationStatus.AUTHORIZED ||
-      status === messaging.AuthorizationStatus.PROVISIONAL;
-    return enabled;
+      status === messaging.AuthorizationStatus.PROVISIONAL
+    );
   }
 }
 

@@ -4,6 +4,8 @@ import { CategoryItem } from '@src/modules/core/interfaces/categoryItem';
 import { SortByType } from '@src/modules/core/interfaces/sortByType';
 import { SortByAscending } from '@src/modules/core/interfaces/sortByAscending';
 import sortService from '@src/modules/ud-sort/domain/services/SortService';
+import { LanguageCode } from '@src/modules/translations/domain/interfaces/Language';
+import { getRandomElements } from '@src/modules/daily-selection/domain/helpers/getRandomElements';
 
 export interface ExistMods {
   id: string;
@@ -20,9 +22,14 @@ type State = {
   sortMods: (
     selectedSortType: SortByType,
     selectedSortByAscending: SortByAscending,
+    currentLanguage: LanguageCode,
   ) => void;
   loadExistMods: () => void;
   removeExistMods: () => void;
+  updateMod: (mod: CategoryItem) => void;
+  dailySelectionMods: CategoryItem[];
+  isDailySelectionLoading: boolean;
+  getDailySelection: () => void;
 };
 
 const useModsStore = create<State>((set, get) => ({
@@ -31,6 +38,8 @@ const useModsStore = create<State>((set, get) => ({
   isModsLoading: false,
   isModsRefreshing: false,
   isModsSorting: false,
+  dailySelectionMods: [],
+  isDailySelectionLoading: false,
 
   loadMods: async () => {
     const state = get();
@@ -38,8 +47,6 @@ const useModsStore = create<State>((set, get) => ({
       set({ isModsLoading: true });
       const fMods = await getMods();
       set({ mods: fMods, isModsLoading: false });
-
-      state.sortMods('By default', 'Ascending');
       state.loadExistMods();
     } catch (err) {
       console.warn('err loadMods', err);
@@ -56,6 +63,7 @@ const useModsStore = create<State>((set, get) => ({
   sortMods: (
     selectedSortType: SortByType,
     selectedSortByAscending: SortByAscending,
+    currentLanguage: LanguageCode,
   ) => {
     set({ isModsSorting: true });
     const mods = get().mods;
@@ -63,6 +71,7 @@ const useModsStore = create<State>((set, get) => ({
       mods,
       selectedSortType,
       selectedSortByAscending,
+      currentLanguage,
     );
     set({ mods: fMods, isModsSorting: false });
   },
@@ -75,6 +84,35 @@ const useModsStore = create<State>((set, get) => ({
 
   removeExistMods: () => {
     set({ existMods: [] });
+  },
+
+  updateMod: (mod: CategoryItem) => {
+    const state = get();
+    if (mod) {
+      const fMods = state.mods.map(i => {
+        if (i.id === mod.id) {
+          return mod;
+        }
+        return i;
+      });
+      set({ mods: fMods });
+    }
+    if (state.dailySelectionMods.find(i => i.id === mod.id)) {
+      const fDailyMods = state.dailySelectionMods.map(i => {
+        if (i.id === mod.id) {
+          return mod;
+        }
+        return i;
+      });
+      set({ dailySelectionMods: fDailyMods });
+    }
+  },
+
+  getDailySelection: () => {
+    const state = get();
+    set({ isDailySelectionLoading: true });
+    const selectionMods = getRandomElements(state.mods, 10);
+    set({ dailySelectionMods: selectionMods, isDailySelectionLoading: false });
   },
 }));
 

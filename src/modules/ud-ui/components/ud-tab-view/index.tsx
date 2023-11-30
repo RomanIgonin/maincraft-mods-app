@@ -3,12 +3,17 @@ import * as S from './styles';
 import { TabView } from 'react-native-tab-view';
 import { BG_TOP_BAR } from '@src/assets/constants/imagePaths';
 import { Dimensions, View } from 'react-native';
+import { Route, SceneRendererProps } from 'react-native-tab-view/src/types';
 
 const { width } = Dimensions.get('window');
 
+type SceneProps = {
+  route: any;
+} & Omit<SceneRendererProps, 'layout'>;
+
 interface Props {
-  routes: any[];
-  renderScene: any;
+  routes: Route[];
+  renderScene: ({ route, jumpTo, position }: SceneProps) => React.JSX.Element;
   isYourLikeList?: boolean;
 }
 
@@ -43,7 +48,7 @@ export default function UDTabView(props: Props) {
             <S.TabBarItemText fSize={18} color={'light'}>
               {route.title}
             </S.TabBarItemText>
-            {index === key && <S.UnderLine></S.UnderLine>}
+            {index === key && <S.UnderLine />}
           </S.TabBarItemWrap>
         </View>
       );

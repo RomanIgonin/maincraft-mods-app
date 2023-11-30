@@ -9,7 +9,8 @@ import useSeedsStore from '@src/modules/seeds/store';
 import UDList from '@src/modules/ud-ui/components/ud-list';
 import { navigateBack } from '@src/modules/navigation/RootNavigation';
 import UDTabView from '@src/modules/ud-ui/components/ud-tab-view';
-import likeListService from '@src/modules/your-like-list/domain/services/LikeListService';
+import useLikeList from '@src/modules/your-like-list/domain/hooks/useLikeList';
+import { useAppTranslation } from '@src/modules/translations/domain/hooks/use-app-translation';
 
 export default function YourLikeListScreen() {
   const { mods } = useModsStore();
@@ -17,43 +18,45 @@ export default function YourLikeListScreen() {
   const { skins } = useSkinsStore();
   const { seeds } = useSeedsStore();
 
+  const { t } = useAppTranslation('shared');
+
   const routes = [
     {
       key: 'first',
-      title: 'Maps',
+      title: t('Maps'),
     },
     {
       key: 'second',
-      title: 'Mods',
+      title: t('Mods'),
     },
     {
       key: 'third',
-      title: 'Skins',
+      title: t('Skins'),
     },
     {
       key: 'fourth',
-      title: 'Seeds',
+      title: t('Seeds'),
     },
   ];
 
   const FirstRoute = () => {
-    const data = likeListService.FilterLikedData(maps, 'maps');
-    return <UDList typeCategory={'maps'} data={data} />;
+    const { likedData } = useLikeList({ data: maps, category: 'maps' });
+    return <UDList typeCategory={'maps'} data={likedData} />;
   };
 
   const SecondRoute = () => {
-    const data = likeListService.FilterLikedData(mods, 'mods');
-    return <UDList typeCategory={'mods'} data={data} />;
+    const { likedData } = useLikeList({ data: mods, category: 'mods' });
+    return <UDList typeCategory={'mods'} data={likedData} />;
   };
 
   const ThirdRoute = () => {
-    const data = likeListService.FilterLikedData(skins, 'skins');
-    return <UDList typeCategory={'skins'} data={data} />;
+    const { likedData } = useLikeList({ data: skins, category: 'skins' });
+    return <UDList typeCategory={'skins'} data={likedData} />;
   };
 
   const FourthRoute = () => {
-    const data = likeListService.FilterLikedData(seeds, 'seeds');
-    return <UDList typeCategory={'seeds'} data={data} />;
+    const { likedData } = useLikeList({ data: seeds, category: 'seeds' });
+    return <UDList typeCategory={'seeds'} data={likedData} />;
   };
 
   const renderScene = SceneMap({
@@ -70,7 +73,7 @@ export default function YourLikeListScreen() {
   return (
     <S.Container>
       <UDHeader
-        title={'Your like list'}
+        title={t('your_like_list')}
         arrowBackButton={true}
         onPressArrowBack={onPressArrowBack}
       />

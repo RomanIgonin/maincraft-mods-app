@@ -1,30 +1,39 @@
 import { SortByType } from '@src/modules/core/interfaces/sortByType';
 import { SortByAscending } from '@src/modules/core/interfaces/sortByAscending';
 import { CategoryItem } from '@src/modules/core/interfaces/categoryItem';
+import { LanguageCode } from '@src/modules/translations/domain/interfaces/Language';
 
 export class SortService {
   public sort(
     data: CategoryItem[],
     sortByType: SortByType,
     sortByAscending: SortByAscending,
+    currentLanguage: LanguageCode,
   ): CategoryItem[] {
-    if (sortByType === 'By downloads') {
-      // TODO: После добавления на сервер кол-ва скачиваний сделать эту сортировку
-      return data;
-    } else if (sortByType === 'By like') {
-      // TODO: После добавления на сервер кол-ва лайков сделать эту сортировку
-      return data;
-    } else {
-      return data.sort(function (a, b) {
-        if (a.engName > b.engName) {
-          return sortByAscending === 'Ascending' ? 1 : -1;
+    return data.sort(function (a, b) {
+      const typeResolve = (item: CategoryItem) => {
+        if (sortByType === 'By downloads') {
+          return item.downloads;
+        } else if (sortByType === 'By like') {
+          return item.likes;
+        } else {
+          if (currentLanguage === 'en') {
+            return item.name.en;
+          } else {
+            return item.name.ru;
+          }
         }
-        if (a.engName < b.engName) {
-          return sortByAscending === 'Ascending' ? -1 : 1;
-        }
-        return 0;
-      });
-    }
+      };
+      const prev = typeResolve(a);
+      const curr = typeResolve(b);
+      if (prev > curr) {
+        return sortByAscending === 'Ascending' ? 1 : -1;
+      }
+      if (prev < curr) {
+        return sortByAscending === 'Ascending' ? -1 : 1;
+      }
+      return 0;
+    });
   }
 }
 

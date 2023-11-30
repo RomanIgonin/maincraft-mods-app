@@ -6,6 +6,7 @@ import useNotificationsStore from '@src/modules/notifications/store';
 import { AppState, Linking } from 'react-native';
 import notificationsService from '@src/modules/notifications/domain/services/NotificationService';
 import notificationService from '@src/modules/notifications/domain/services/NotificationService';
+import { useAppTranslation } from '@src/modules/translations/domain/hooks/use-app-translation';
 
 interface Props {
   openNotification: boolean;
@@ -22,6 +23,8 @@ export default function NotificationModal(props: Props) {
       checkNotification();
     });
   }, []);
+
+  const { t } = useAppTranslation('notific');
 
   const toggleSwitch = useCallback(async () => {
     if (isGranted) {
@@ -47,17 +50,17 @@ export default function NotificationModal(props: Props) {
       onRequestClose={() => setOpenNotification(false)}>
       <S.ModalContainer>
         <S.ModalHeader fSize={27} fStyle={'caption700'}>
-          Notification
+          {t('notification')}
         </S.ModalHeader>
 
         <S.SwitchAndTextWrap>
           <S.TextWrap>
             <S.NewAddonsText fSize={18} fStyle={'caption400'} color={'dark'}>
-              New addons notifications
+              {t('new_addons')}
             </S.NewAddonsText>
 
             <S.PersonalizedText fSize={15} fStyle={'caption400'}>
-              Personalized periodic notifications on new addons
+              {t('notification_addons')}
             </S.PersonalizedText>
           </S.TextWrap>
 
@@ -73,10 +76,10 @@ export default function NotificationModal(props: Props) {
           </S.SwitchNotificationWrap>
         </S.SwitchAndTextWrap>
 
-        {isEnabledInSettings && (
+        {!isEnabledInSettings && (
           <>
             <S.PersonalizedText fSize={15} fStyle={'caption400'}>
-              Notifications are currently disabled{' '}
+              {t('disabled')}
             </S.PersonalizedText>
 
             <S.TapHereText
@@ -84,7 +87,7 @@ export default function NotificationModal(props: Props) {
               color={'green'}
               fSize={16}
               onPress={onPressTurnItOn}>
-              Tap here to turn it on
+              {t('tap')}
             </S.TapHereText>
           </>
         )}

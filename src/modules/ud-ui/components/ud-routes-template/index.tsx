@@ -1,5 +1,5 @@
 import UDList from '@src/modules/ud-ui/components/ud-list';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { CategoryType } from '@src/modules/core/interfaces/categoryType';
 import useModsStore from '@src/modules/mods/store';
 import { useFilter } from '@src/modules/ud-ui/hooks/useFilter';
@@ -21,14 +21,15 @@ function UDRoutesTemplate(props: RouteProps) {
   const { seeds } = useSeedsStore();
   const { filterByTag } = useFilter();
 
-  const dataResolver =
-    typeCategory === 'mods'
+  const dataResolver = useMemo(() => {
+    return typeCategory === 'mods'
       ? mods
       : typeCategory === 'maps'
       ? maps
       : typeCategory === 'skins'
       ? skins
       : seeds;
+  }, [maps, mods, seeds, skins, typeCategory]);
 
   const filteredDataByTag = filterByTag(dataResolver, filterTag);
 

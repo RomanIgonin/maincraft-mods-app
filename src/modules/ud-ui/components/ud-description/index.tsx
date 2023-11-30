@@ -5,23 +5,29 @@ import {
   ARROW_RIGHT_DESCRIPTION,
 } from '@src/assets/constants/imagePaths';
 import { Dimensions } from 'react-native';
+import { useAppTranslation } from '@src/modules/translations/domain/hooks/use-app-translation';
+import { CategoryItem } from '@src/modules/core/interfaces/categoryItem';
+import useTranslationsStore from '@src/modules/translations/store';
 
 const { width } = Dimensions.get('window');
 
-export default function UDDescription() {
+interface Props {
+  categoryItem: CategoryItem;
+}
+export default function UDDescription(props: Props) {
   const [isDescriptionOpen, setIsDescriptionOpen] = useState<boolean>(false);
+  const { t } = useAppTranslation('description');
+  const { currentLanguage } = useTranslationsStore();
 
-  const mockHtml = {
-    html: `
-    <p><strong>Author: o seu velho amigo TNT</strong></p>
-    <p><strong>Important:</strong> when creating new world, please enable on these <a href='http://u1443067.cp.regruhosting.ru/mods/img/squid-game-rampage-addon_2.jpeg'>4 experiments option</a> in the Game tab.</p>
-    <p>If you don't know how install the mod, you can <a href='https://www.youtube.com/watch?v=DLB-TgPeias'}>watch this video</a></p>
-    <p><img src=http://u1443067.cp.regruhosting.ru/mods/img/squid-game-rampage-addon_2.jpeg alt="img" /></p>
-  `,
-  };
+  const { categoryItem } = props;
+
+  const desc =
+    currentLanguage && currentLanguage === 'en'
+      ? categoryItem.desc.en
+      : categoryItem.desc.ru;
 
   const onPressDescription = () => {
-    setIsDescriptionOpen(true);
+    setIsDescriptionOpen(!isDescriptionOpen);
   };
   const onPressHide = () => {
     setIsDescriptionOpen(false);
@@ -41,7 +47,8 @@ export default function UDDescription() {
           'rgba(255,255,255,0)',
           'rgba(255,255,255,0)',
           '#f2f2f2',
-        ]}></S.Gradient>
+        ]}
+      />
     );
   };
 
@@ -49,12 +56,12 @@ export default function UDDescription() {
     return isDescriptionOpen ? (
       <S.HideWrap onPress={onPressHide} activeOpacity={1}>
         <S.Hide fStyle={'caption700'} fSize={20} color={'red'}>
-          Hide
+          {t('hide')}
         </S.Hide>
       </S.HideWrap>
     ) : (
       <S.More fStyle={'caption700'} fSize={20} color={'green'}>
-        More
+        {t('more')}
       </S.More>
     );
   };
@@ -64,12 +71,17 @@ export default function UDDescription() {
       <S.DescriptionWrap isDescriptionOpen={isDescriptionOpen}>
         <S.HeaderWrap>
           <S.HeaderText color={'grayDark'} fSize={24}>
-            Description
+            {t('description')}
           </S.HeaderText>
           <S.HeaderArrow source={headerArrowResolver()} />
         </S.HeaderWrap>
 
-        <S.RenderHtmlWrap contentWidth={width} source={mockHtml} />
+        <S.RenderHtmlWrap
+          contentWidth={width}
+          source={{
+            html: desc,
+          }}
+        />
       </S.DescriptionWrap>
 
       {gradientResolver()}

@@ -39,7 +39,7 @@ export const TopSkins = styled.View`
   elevation: 5;
   width: 170px;
   height: 234px;
-  box-shadow: ${Platform.OS === 'ios' ? `0 2px 3px rgba(0, 0, 0, 0.25);` : ''};
+  box-shadow: ${Platform.OS === 'ios' ? '0 2px 3px rgba(0, 0, 0, 0.25);' : ''};
   margin: 0 6px 12px 6px;
   background-color: ${props => props.theme.colors.backgroundLight};
 `;

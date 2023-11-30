@@ -6,6 +6,7 @@ import {
 import React from 'react';
 import notificationsService from '@src/modules/notifications/domain/services/NotificationService';
 import useNotificationsStore from '@src/modules/notifications/store';
+import notificationService from '@src/modules/notifications/domain/services/NotificationService';
 
 interface Props {
   setModalVisible: (bool: boolean) => void;
@@ -16,9 +17,10 @@ export const NotificationModal = (props: Props) => {
   const { checkNotification } = useNotificationsStore();
 
   const onPressAllow = () => {
-    notificationsService
-      .requestNotificationsPermissions()
-      .then(() => checkNotification());
+    notificationsService.requestNotificationsPermissions().then(() => {
+      notificationService.refreshToken();
+      // checkNotification();
+    });
     setModalVisible(false);
   };
 

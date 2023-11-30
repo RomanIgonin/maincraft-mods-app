@@ -10,7 +10,7 @@ export const Container = styled.View`
 
 export const HeaderBgWrap = styled.View`
   ${Platform.OS === 'ios'
-    ? `box-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);`
+    ? 'box-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);'
     : 'elevation: 10;'};
   background-color: rgb(255, 255, 255);
 `;

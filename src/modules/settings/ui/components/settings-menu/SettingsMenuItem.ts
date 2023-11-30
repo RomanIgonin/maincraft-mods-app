@@ -1,5 +1,7 @@
+import { Source } from 'react-native-fast-image';
+
 export interface SettingsMenuItem {
   id: string;
-  icon: NodeRequire;
+  icon: Source;
   label: string;
 }

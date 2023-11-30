@@ -19,12 +19,11 @@ interface ContainerProps {
   label: string;
 }
 export const Container = styled.TouchableOpacity<ContainerProps>`
-  flex: 1;
+  // flex: 1;
   height: 60px;
   border-radius: 20px;
   overflow: hidden;
-  margin-left: ${props =>
-    props.label === 'Mods' || props.label === 'Seeds' ? '12px' : '0px'};
+  width: 48%;
 `;
 
 export const ImageBg = styled(FastImage)`

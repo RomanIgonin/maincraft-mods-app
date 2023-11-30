@@ -19,7 +19,7 @@ export const ModalWrap = styled.View`
   padding: 16px 0 0 0;
   align-items: center;
   elevation: 5;
-  box-shadow: ${Platform.OS === 'ios' ? `0 0px 30px rgba(0, 0, 0, 0.25);` : ''};
+  box-shadow: ${Platform.OS === 'ios' ? '0 0px 30px rgba(0, 0, 0, 0.25);' : ''};
   width: 80%;
 `;
 

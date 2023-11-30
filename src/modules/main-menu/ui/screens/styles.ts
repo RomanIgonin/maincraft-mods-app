@@ -4,7 +4,7 @@ import { Platform } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 export const Container = styled.ScrollView`
-  background-color: ${props => props.theme.colors.backgroundLight};
+  background-color: ${props => props.theme.colors.green};
 `;
 
 export const HeaderWrap = styled.View`
@@ -68,22 +68,35 @@ export const DiscordIcon = styled(FastImage)`
   align-self: center;
 `;
 
+export const BannerMemeWrap = styled.TouchableOpacity`
+  margin: 18px 12px 6px 12px;
+  elevation: 5;
+  box-shadow: ${Platform.OS === 'ios' ? '0 2px 3px rgba(0, 0, 0, 0.2);' : ''};
+`;
+
+export const BannerMeme = styled(FastImage)`
+  height: 91px;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+`;
+
 export const NewAddonsWrap = styled.View`
   margin: 8px 12px 0 8px;
   elevation: 5;
-  box-shadow: ${Platform.OS === 'ios' ? `0 2px 3px rgba(0, 0, 0, 0.2);` : ''};
+  box-shadow: ${Platform.OS === 'ios' ? '0 2px 3px rgba(0, 0, 0, 0.2);' : ''};
 `;
 
 export const ImageNewAddons = styled(FastImage)`
   height: 104px;
   width: 100%;
-  padding-top: 24px;
+  justify-content: center;
+  align-items: center;
 `;
 
 export const NewAddonsText = styled(UDText)`
-  width: 180px;
   text-align: center;
-  margin-left: 86px;
+  padding: 0 22px;
 `;
 
 interface ShadowCarouselProps {
@@ -94,7 +107,7 @@ export const ShadowCarousel = styled.View<ShadowCarouselProps>`
     props.isImageDelayLoading
       ? ''
       : `box-shadow: ${
-          Platform.OS === 'ios' ? `0 2px 3px rgba(0, 0, 0, 0.3);` : ''
+          Platform.OS === 'ios' ? '0 2px 3px rgba(0, 0, 0, 0.3);' : ''
         };
       elevation: 5;
       background-color: ${props.theme.colors.backgroundLight};`}

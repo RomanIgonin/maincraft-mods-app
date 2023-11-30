@@ -11,7 +11,7 @@ export const Container = styled.View`
 `;
 
 export const ListItem = styled.View`
-  box-shadow: ${Platform.OS === 'ios' ? `0 2px 4px rgba(0, 0, 0, 0.15);` : ''};
+  box-shadow: ${Platform.OS === 'ios' ? '0 2px 4px rgba(0, 0, 0, 0.15);' : ''};
   elevation: 5;
 `;
 

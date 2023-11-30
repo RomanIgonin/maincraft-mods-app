@@ -4,6 +4,7 @@ import { CategoryItem } from '@src/modules/core/interfaces/categoryItem';
 import { SortByType } from '@src/modules/core/interfaces/sortByType';
 import { SortByAscending } from '@src/modules/core/interfaces/sortByAscending';
 import sortService from '@src/modules/ud-sort/domain/services/SortService';
+import { LanguageCode } from '@src/modules/translations/domain/interfaces/Language';
 
 export interface ExistMaps {
   id: string;
@@ -20,9 +21,11 @@ type State = {
   sortMaps: (
     selectedSortType: SortByType,
     selectedSortByAscending: SortByAscending,
+    currentLanguage: LanguageCode,
   ) => void;
   loadExistMaps: () => void;
   removeExistMaps: () => void;
+  updateMap: (map: CategoryItem) => void;
 };
 
 const useMapsStore = create<State>((set, get) => ({
@@ -38,8 +41,6 @@ const useMapsStore = create<State>((set, get) => ({
       set({ isMapsLoading: true });
       const fMaps = await getMaps();
       set({ maps: fMaps, isMapsLoading: false });
-
-      state.sortMaps('By default', 'Ascending');
       state.loadExistMaps();
     } catch (err) {
       console.warn('err loadMaps', err);
@@ -56,6 +57,7 @@ const useMapsStore = create<State>((set, get) => ({
   sortMaps: (
     selectedSortType: SortByType,
     selectedSortByAscending: SortByAscending,
+    currentLanguage: LanguageCode,
   ) => {
     try {
       set({ isMapsSorting: true });
@@ -64,6 +66,7 @@ const useMapsStore = create<State>((set, get) => ({
         maps,
         selectedSortType,
         selectedSortByAscending,
+        currentLanguage,
       );
       set({ maps: fMaps, isMapsSorting: false });
     } catch (error) {}
@@ -77,6 +80,19 @@ const useMapsStore = create<State>((set, get) => ({
 
   removeExistMaps: () => {
     set({ existMaps: [] });
+  },
+
+  updateMap: (map: CategoryItem) => {
+    const state = get();
+    if (map) {
+      const fMaps = state.maps.map(i => {
+        if (i.id === map.id) {
+          return map;
+        }
+        return i;
+      });
+      set({ maps: fMaps });
+    }
   },
 }));
 

@@ -10,7 +10,7 @@ export const Container = styled.View`
 
 export const HeaderShadow = styled.View`
   ${Platform.OS === 'ios'
-    ? `box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);`
+    ? 'box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);'
     : 'elevation: 10;'};
   background-color: rgb(255, 255, 255);
   width: 100%;
@@ -18,6 +18,10 @@ export const HeaderShadow = styled.View`
 
 export const FlatList = styled.FlatList`
   padding: 10px 0;
+`;
+
+export const ShadowItemWrap = styled.View`
+  ${Platform.OS === 'ios' ? 'box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);' : ''};
 `;
 
 interface ItemProps {
@@ -28,9 +32,7 @@ export const ItemWrap = styled.View<ItemProps>`
   background-color: #fbfbfb;
   border-radius: 20px;
   overflow: hidden;
-  ${Platform.OS === 'ios'
-    ? `box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);`
-    : 'elevation: 10;'};
+  elevation: 10;
   margin: 10px 10px ${props => (props.isLastItem ? '40px' : '10px')} 10px;
 `;
 
@@ -52,10 +54,13 @@ export const ButtonWrap = styled.TouchableOpacity`
   justify-content: center;
 `;
 
-export const ButtonText = styled(UDText)`
+export const ButtonTextWrap = styled.View`
   background-color: ${props => props.theme.colors.green};
   padding: 8px 38px;
   align-self: center;
-  line-height: 30px;
   border-radius: 20px;
+`;
+
+export const ButtonText = styled(UDText)`
+  line-height: 30px;
 `;

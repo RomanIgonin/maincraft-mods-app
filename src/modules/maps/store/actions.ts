@@ -5,13 +5,12 @@ import { CategoryItem } from '@src/modules/core/interfaces/categoryItem';
 import { ExistMaps } from '@src/modules/maps/store/index';
 
 export const getMaps = async (): Promise<CategoryItem[]> => {
-  const API_URL_MAPS = Config.API_URL + 'maps/main.json';
-
+  const API_URL_MAPS = Config.API_URL + 'asset/sorted/maps';
   const maps = await axios.get(API_URL_MAPS);
 
   return await Promise.all(
-    maps.data.addons.map(async (mp: any) => {
-      const filepath = DocumentDirectoryPath + '/' + mp.fileName;
+    maps.data.map(async (mp: any) => {
+      const filepath = DocumentDirectoryPath + '/' + mp.fullName;
       return { ...mp, filepath };
     }),
   );
@@ -20,15 +19,15 @@ export const getMaps = async (): Promise<CategoryItem[]> => {
 export const getExistMaps = async (
   maps: CategoryItem[],
 ): Promise<ExistMaps[] | []> => {
+  // TODO: replace to for await
   const existArr = await Promise.all(
     maps.map(async map => {
-      const filepath = DocumentDirectoryPath + '/' + map.fileName;
+      const filepath = DocumentDirectoryPath + '/' + map.file.fullName;
       const isExist = await RNFS.exists(filepath);
       if (isExist) {
-        return { id: map.id };
+        return { id: map.id } as ExistMaps;
       }
     }),
   );
-  const existMaps = existArr.filter(item => item !== undefined);
-  return existMaps;
+  return existArr.filter(item => item !== undefined) as ExistMaps[];
 };

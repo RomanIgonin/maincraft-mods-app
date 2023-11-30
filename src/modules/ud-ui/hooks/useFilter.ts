@@ -5,15 +5,10 @@ export const useFilter = () => {
     data: CategoryItem[],
     categoryItem: CategoryItem,
   ) => {
-    const arrayTags = categoryItem.tags.toLowerCase().split(' ');
-
     let similarItems: CategoryItem[] = [];
-
-    arrayTags.map(tag => {
+    categoryItem.tags.split(' ').map((tag: string) => {
       const arr = data.filter(dataItem => {
-        const dataItemTagsArr = dataItem.tags.toLowerCase().split(' ');
-
-        if (dataItemTagsArr.find(item => item === tag)) {
+        if (dataItem.tags.split(' ').find((item: string) => item === tag)) {
           if (categoryItem.id !== dataItem.id) {
             if (!similarItems.find(item => item.id === dataItem.id)) {
               return true;
@@ -26,8 +21,13 @@ export const useFilter = () => {
     return similarItems;
   };
 
-  const filterByTag = (data: CategoryItem[], category: string) => {
-    return data.filter(item => item.tags.toLowerCase().includes(category));
+  const filterByTag = (data: CategoryItem[], tag: string) => {
+    if (tag === '') {
+      return data;
+    }
+    return data.filter(item =>
+      item.tags.split(' ').find(i => i.toLowerCase().includes(tag)),
+    );
   };
 
   return { filterBySimilar, filterByTag };

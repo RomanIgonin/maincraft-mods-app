@@ -9,3 +9,9 @@
 - Subscriptions
 - Advertising (AdMob, IronSource)
 - State Management (Zustand)
+
+<div style="flex-direction: row">
+<img alt="Home Screen" src="https://github.com/RomanIgonin/maincraft-mods-app/blob/main/src/assets/images/screens/Home.png" width="200">
+<img alt="Mods Screen" src="https://github.com/RomanIgonin/maincraft-mods-app/blob/main/src/assets/images/screens/Mods.png" width="200">
+<img alt="Settings Screen" src="https://github.com/RomanIgonin/maincraft-mods-app/blob/main/src/assets/images/screens/Settings.png" width="200">
+</div>

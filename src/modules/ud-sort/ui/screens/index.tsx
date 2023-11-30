@@ -1,32 +1,35 @@
 import * as S from './styles';
 import Modal from 'react-native-modal';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { SortByType } from '@src/modules/core/interfaces/sortByType';
 import { SortByAscending } from '@src/modules/core/interfaces/sortByAscending';
 import { RadioButton } from 'react-native-paper';
 import { theme } from '@styles/theme';
+import { TouchableOpacity } from 'react-native';
+import { useAppTranslation } from '@src/modules/translations/domain/hooks/use-app-translation';
+import useTranslationsStore from '@src/modules/translations/store';
+import { LanguageCode } from '@src/modules/translations/domain/interfaces/Language';
 
 interface Props {
   isVisible: boolean;
   setIsVisible: (bool: boolean) => void;
-  sort: (sortType: SortByType, sortByAscending: SortByAscending) => void;
+  sort: (
+    sortType: SortByType,
+    sortByAscending: SortByAscending,
+    currentLanguage: LanguageCode,
+  ) => void;
 }
 
 export default function UDSortModal(props: Props) {
   const { isVisible, setIsVisible, sort } = props;
-
-  const [sortType, setSortType] = useState<SortByType>('By default');
-  const [sortByAscending, setSortByAscending] =
-    useState<SortByAscending>('Ascending');
-
-  useEffect(() => {
-    setSortType('By default');
-    setSortByAscending('Ascending');
-  }, [isVisible]);
+  const { currentLanguage } = useTranslationsStore();
+  const { t } = useAppTranslation('sort');
+  const [sortType, setSortType] = useState(t('by_default'));
+  const [sortByAscending, setSortByAscending] = useState(t('ascending'));
 
   const onPressRadioButton = ({ title }: any) => {
     const isTopSortType =
-      title === 'Ascending' ? false : title !== 'Descending';
+      title === t('ascending') ? false : title !== t('descending');
     if (isTopSortType) {
       setSortType(title);
     } else {
@@ -36,8 +39,16 @@ export default function UDSortModal(props: Props) {
 
   const onPressApply = useCallback(() => {
     setIsVisible(false);
-    sort(sortType, sortByAscending);
-  }, [sortType, sortByAscending]);
+    const fSortType: SortByType =
+      sortType === t('by_default')
+        ? 'By default'
+        : sortType === t('by_downloads')
+        ? 'By downloads'
+        : 'By like';
+    const fSortByAscending: SortByAscending =
+      sortByAscending === t('ascending') ? 'Ascending' : 'Descending';
+    sort(fSortType, fSortByAscending, currentLanguage);
+  }, [setIsVisible, sortType, sortByAscending, sort, currentLanguage]);
 
   const onPressBackButton = () => {
     setIsVisible(false);
@@ -49,7 +60,9 @@ export default function UDSortModal(props: Props) {
 
     return (
       <S.SortTypeWrap>
-        <S.SortTypeText fStyle={'caption400'}>{title}</S.SortTypeText>
+        <TouchableOpacity onPress={() => onPressRadioButton({ title })}>
+          <S.SortTypeText fStyle={'caption400'}>{title}</S.SortTypeText>
+        </TouchableOpacity>
         <RadioButton
           value={title}
           color={theme.colors.green}
@@ -70,23 +83,23 @@ export default function UDSortModal(props: Props) {
       <S.ModalContainer>
         <S.ModalWrap>
           <S.ModalHeader fSize={27} fStyle={'caption700'}>
-            Sort
+            {t('sort')}
           </S.ModalHeader>
 
           <S.RadioFieldWrap>
-            <RadioElement title={'By default'} />
-            <RadioElement title={'By downloads'} />
-            <RadioElement title={'By like'} />
+            <RadioElement title={t('by_default')} />
+            <RadioElement title={t('by_downloads')} />
+            <RadioElement title={t('by_like')} />
           </S.RadioFieldWrap>
 
           <S.RadioFieldBottomWrap>
-            <RadioElement title={'Ascending'} />
-            <RadioElement title={'Descending'} />
+            <RadioElement title={t('ascending')} />
+            <RadioElement title={t('descending')} />
           </S.RadioFieldBottomWrap>
 
           <S.ButtonApplyWrap onPress={onPressApply}>
             <S.ButtonApply fSize={20} color={'light'}>
-              Apply
+              {t('apply')}
             </S.ButtonApply>
           </S.ButtonApplyWrap>
         </S.ModalWrap>

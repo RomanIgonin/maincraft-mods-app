@@ -1,0 +1,21 @@
+diff --git a/node_modules/react-native-onesignal/react-native-onesignal.podspec b/node_modules/react-native-onesignal/react-native-onesignal.podspec
+index a744785..63e0038 100644
+--- a/node_modules/react-native-onesignal/react-native-onesignal.podspec
++++ b/node_modules/react-native-onesignal/react-native-onesignal.podspec
+@@ -21,6 +21,14 @@ Pod::Spec.new do |s|
+   # REQUIRED: Ensure you have the following in your project's Podfile
+   # pod 'React', :path => '../node_modules/react-native/'
+ 
+-  # The Native OneSignal-iOS-SDK XCFramework from cocoapods.
+-  s.dependency 'OneSignalXCFramework', '5.0.4'
++ # s.dependency 'OneSignalXCFramework', '5.0.4'
++  s.dependency 'OneSignalXCFramework/OneSignal', '5.0.4'
++  s.dependency 'OneSignalXCFramework/OneSignalCore', '5.0.4'
++  s.dependency 'OneSignalXCFramework/OneSignalExtension', '5.0.4'
++  s.dependency 'OneSignalXCFramework/OneSignalInAppMessages', '5.0.4'
++  # s.dependency 'OneSignalXCFramework/OneSignalLocation', '5.0.4'
++  s.dependency 'OneSignalXCFramework/OneSignalNotifications', '5.0.4'
++  s.dependency 'OneSignalXCFramework/OneSignalOSCore', '5.0.4'
++  s.dependency 'OneSignalXCFramework/OneSignalOutcomes', '5.0.4'
++  s.dependency 'OneSignalXCFramework/OneSignalUser', '5.0.4'
+ end

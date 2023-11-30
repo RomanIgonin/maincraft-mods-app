@@ -10,7 +10,7 @@ export const Container = styled.ScrollView`
 
 export const HeaderShadow = styled.View`
   ${Platform.OS === 'ios'
-    ? `box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);`
+    ? 'box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);'
     : 'elevation: 10;'};
   background-color: rgb(255, 255, 255);
   width: 100%;
@@ -88,7 +88,7 @@ export const ModalContainer = styled.View`
   padding: 20px 0 0 0;
   align-items: center;
   ${Platform.OS === 'ios'
-    ? `box-shadow: 0 0px 30px rgba(0, 0, 0, 0.25);`
+    ? 'box-shadow: 0 0px 30px rgba(0, 0, 0, 0.25);'
     : 'elevation: 5;'};
 `;
 

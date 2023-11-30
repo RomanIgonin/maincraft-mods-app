@@ -1,13 +1,20 @@
 import Share from 'react-native-share';
+import dynamicLinks from '@react-native-firebase/dynamic-links';
 
-export const useShare = (shareMessage: string, shareUrl: string) => {
-  const options = {
-    message: shareMessage,
-    url: shareUrl.replace('', '_'),
-  };
-  Share.open(options)
-    .then(res => {})
-    .catch(err => {
-      err && console.warn('error in useShare', err);
+export const useShare = () => {
+  const appUrl = 'https://maincraftmodsapp.page.link';
+
+  const share = async (engName: string, urlShare: string) => {
+    const url = await dynamicLinks().buildShortLink({
+      domainUriPrefix: appUrl,
+      link: urlShare,
     });
+    const options = {
+      message: engName,
+      url,
+    };
+    await Share.open(options);
+  };
+
+  return { share };
 };
