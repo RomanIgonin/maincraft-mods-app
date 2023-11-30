@@ -1,0 +1,12 @@
+diff --git a/node_modules/react-native-tracking-transparency/react-native-tracking-transparency.podspec b/node_modules/react-native-tracking-transparency/react-native-tracking-transparency.podspec
+index f0dccd2..b3dc683 100644
+--- a/node_modules/react-native-tracking-transparency/react-native-tracking-transparency.podspec
++++ b/node_modules/react-native-tracking-transparency/react-native-tracking-transparency.podspec
+@@ -17,6 +17,6 @@ Pod::Spec.new do |s|
+   s.source_files = "ios/**/*.{h,m,mm}"
+ 
+ 
+-  s.dependency "React"
++  s.dependency 'React-Core'
+   s.weak_framework = "AppTrackingTransparency"
+ end

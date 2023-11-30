@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "464477574425",
+    "project_id": "addmods-e243a",
+    "storage_bucket": "addmods-e243a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:464477574425:android:7fe1654445c77285b2a188",
+        "android_client_info": {
+          "package_name": "com.maincraftmodsapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "464477574425-ojofhs10ihv4f035g4uuenv6h6nflctu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCoLI-mchWUfxdvl_hWWkfRgw5ZCfQEqIE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "464477574425-ojofhs10ihv4f035g4uuenv6h6nflctu.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "464477574425-892u6337g861g3bta26c74mj90pf853j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.reactjs.native.example.MaincraftModsApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

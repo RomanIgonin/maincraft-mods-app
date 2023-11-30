@@ -1,0 +1,25 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/assets/fonts/Calibri-Bold.ttf",
+      "sha1": "5c37c22b37b10555f34cc0b78cc044070f1eccb0"
+    },
+    {
+      "path": "src/assets/fonts/Calibri-Regular.ttf",
+      "sha1": "f5389d4420139276a898ccc7e04ac9ae7f76b431"
+    },
+    {
+      "path": "src/assets/fonts/PTSansCaption-Bold.ttf",
+      "sha1": "dc2f85bcefc1805fa4e5ca9390ad76d110fa92a4"
+    },
+    {
+      "path": "src/assets/fonts/PTSansCaption-Regular.ttf",
+      "sha1": "16591fc0e814fc1e2033e982e49f189a5bb49824"
+    },
+    {
+      "path": "src/assets/fonts/Progresspixel_Bold.ttf",
+      "sha1": "21089d52515792be9662b50609a25111e6cc1263"
+    }
+  ]
+}
